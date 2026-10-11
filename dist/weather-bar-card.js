@@ -327,9 +327,9 @@ const DETAIL_STYLE = `
 
 /* Current details: one 3-column box; on desktop it sits in the hero as frosted glass next to the temperature. */
 .tiles { display: grid; grid-template-columns: repeat(var(--d-tiles), minmax(0, 1fr)); row-gap: 14px; column-gap: 10px; padding: 14px;
-  border-radius: 20px; background: var(--d-tile); box-shadow: var(--d-tile-sh); }
+  border-radius: 20px; background: var(--d-tiles-bg); box-shadow: var(--d-tile-sh); }
 .hero .tiles { flex: 0 1 470px; min-width: 0; column-gap: 18px; padding: 14px 16px; color: #fff; text-shadow: none; --d-fg2: rgba(255,255,255,.74);
-  background: rgba(20,20,24,.34); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  background: rgba(20,20,24,.2); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 0 0 1px rgba(255,255,255,.06); }
 .tile { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tl { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--d-fg2); white-space: nowrap; }
@@ -374,13 +374,14 @@ const DROP = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor
 const DETAIL_THEME = {
   dark: {
     '--d-surface': '#1C1C1E', '--d-fg': '#F5F5F7', '--d-fg2': 'rgba(235,235,245,.62)', '--d-tile': 'linear-gradient(165deg, rgba(62,62,66,.55), rgba(36,36,38,.7))',
+    '--d-tiles-bg': 'linear-gradient(165deg, rgba(62,62,66,.4), rgba(36,36,38,.5))',
     '--d-tile-sh': 'inset 0 1px 0 rgba(255,255,255,.1)', '--d-dot': '#2C2C2E',
     '--d-blue': '#64D2FF', '--d-day-sh': '0 12px 28px -16px rgba(0,0,0,.7)',
     '--d-scrim': 'rgba(0,0,0,.55)', '--d-ring': 'rgba(255,255,255,.08)', '--d-mask': 'linear-gradient(180deg, #000 0%, #000 52%, rgba(0,0,0,.5) 78%, transparent 100%)',
     '--d-hero-scrim': 'linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.28) 70%, transparent 100%)',
   },
   light: {
-    '--d-surface': '#F2F2F7', '--d-fg': '#1C1C1E', '--d-fg2': 'rgba(60,60,67,.7)', '--d-tile': '#FFFFFF',
+    '--d-surface': '#F2F2F7', '--d-fg': '#1C1C1E', '--d-fg2': 'rgba(60,60,67,.7)', '--d-tile': '#FFFFFF', '--d-tiles-bg': 'rgba(255,255,255,.72)',
     '--d-tile-sh': '0 1px 2px rgba(0,0,0,.04), 0 8px 24px -14px rgba(0,0,0,.18)', '--d-dot': '#FFFFFF',
     '--d-blue': '#0062CC', '--d-day-sh': '0 10px 24px -16px rgba(0,0,0,.4)',
     '--d-scrim': 'rgba(30,30,35,.32)', '--d-ring': 'rgba(0,0,0,.06)',
