@@ -16,7 +16,7 @@ A full-width weather bar for the top of a Home Assistant dashboard. On the left 
 ## Features
 
 - **Photo of the current weather**: 12 photos (day/night variants) with a soft fade into the bar.
-- **Optional effects**: animated rain, snow and lightning.
+- **Optional effects**: animated rain, snow and lightning in the bar, the detail and each forecast day.
 - **Forecast**: animated [Meteocons](https://github.com/basmilius/weather-icons) icons, the full weekday name and day/night temperature (e.g. `15 °C / 8.6 °C`). The number of days adapts to the card width.
 - **Readable on any theme**: on a light dashboard, forecast days that lie on the photo switch to light text.
 - **Compact mode**: below `compact_width` (phones) the card collapses into a small pill with temperature, condition and clock.
@@ -52,7 +52,7 @@ Once the card is accepted into the HACS default store, steps 1–2 won't be need
 1. Download the `dist/` folder from the [latest release](https://github.com/eMalinos/weather-bar-card/releases).
 2. Copy **all** of its files to `/config/www/weather-bar-card/`. The photos and icons must be next to `weather-bar-card.js`.
 3. Settings → Dashboards → ⋮ → **Resources** → **Add resource**:
-   - URL: `/local/weather-bar-card/weather-bar-card.js?v=1.1.1`
+   - URL: `/local/weather-bar-card/weather-bar-card.js?v=1.2.0`
    - Type: **JavaScript module**
 4. Hard-reload the browser. In the companion app use Settings → Companion app → Debugging → Reset frontend cache.
 
