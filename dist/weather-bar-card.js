@@ -10,7 +10,7 @@
  * https://github.com/eMalinos/weather-bar-card
  */
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 
 // Folder of this module, e.g. /hacsfiles/weather-bar-card/ — photos and icons sit next to it.
 const ASSET_BASE = new URL('./', import.meta.url).href;
@@ -181,7 +181,7 @@ export function particles(fx, compact) {
 const DETAIL_I18N = {
   cs: {
     updated: 'aktualizováno', hourly: 'Hodinová předpověď · 24 h', days: 'Předpověď na {n} dní', now: 'Teď',
-    max: 'Max', min: 'Min', precipToday: 'srážek', noPrecip: 'bez srážek', close: 'Zavřít', more: 'Podrobnosti v HA',
+    max: 'Max', min: 'Min', precipToday: 'srážek', noPrecip: 'bez srážek', close: 'Zavřít',
     wind: 'Vítr', from: 'od', humidity: 'Vlhkost', dew: 'rosný bod', pressure: 'Tlak', uv: 'UV index', uvMax: 'max',
     cloud: 'Oblačnost', sun: 'Slunce', sunset: 'západ', sunrise: 'východ', data: 'Data',
     windLv: ['bezvětří', 'slabý', 'mírný', 'čerstvý', 'silný', 'bouřlivý'],
@@ -191,7 +191,7 @@ const DETAIL_I18N = {
   },
   en: {
     updated: 'updated', hourly: 'Hourly forecast · 24 h', days: '{n}-day forecast', now: 'Now',
-    max: 'High', min: 'Low', precipToday: 'precipitation', noPrecip: 'no precipitation', close: 'Close', more: 'Details in HA',
+    max: 'High', min: 'Low', precipToday: 'precipitation', noPrecip: 'no precipitation', close: 'Close',
     wind: 'Wind', from: 'from', humidity: 'Humidity', dew: 'dew point', pressure: 'Pressure', uv: 'UV index', uvMax: 'max',
     cloud: 'Cloud cover', sun: 'Sun', sunset: 'sunset', sunrise: 'sunrise', data: 'Data',
     windLv: ['calm', 'light', 'moderate', 'fresh', 'strong', 'gale'],
@@ -284,7 +284,7 @@ const DETAIL_STYLE = `
 .close { margin-left: auto; width: 36px; height: 36px; flex: none; border: 0; border-radius: 18px; padding: 0; cursor: pointer; color: #fff;
   background: rgba(0,0,0,.32); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; }
 .close:hover { background: rgba(0,0,0,.5); }
-.close:focus-visible, .more:focus-visible { outline: 2px solid #FF9A4D; outline-offset: 2px; }
+.close:focus-visible { outline: 2px solid #FF9A4D; outline-offset: 2px; }
 .big { margin-top: auto; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .bt { font-size: var(--d-temp); font-weight: 200; line-height: .9; letter-spacing: -.045em; }
 .bl { font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
@@ -352,9 +352,7 @@ const DETAIL_STYLE = `
 .sheet .dt b { font-size: 20px; letter-spacing: -.02em; }
 .sheet .dt span { font-size: 14px; }
 
-.foot { display: flex; align-items: center; gap: 12px; font-size: 11.5px; color: var(--d-fg2); padding: 2px 4px; }
-.foot span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.more { margin-left: auto; flex: none; border: 0; background: none; padding: 6px; cursor: pointer; font: inherit; font-weight: 600; color: var(--d-link); }
+.foot { font-size: 11.5px; color: var(--d-fg2); padding: 2px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 `;
 
 const DROP = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s7 7.6 7 12.7a7 7 0 0 1-14 0C5 10.1 12 2.5 12 2.5z"/></svg>';
@@ -363,14 +361,14 @@ const DETAIL_THEME = {
   dark: {
     '--d-surface': '#1C1C1E', '--d-fg': '#F5F5F7', '--d-fg2': 'rgba(235,235,245,.62)', '--d-tile': 'linear-gradient(165deg, rgba(62,62,66,.55), rgba(36,36,38,.7))',
     '--d-tile-solid': '#2C2C2E', '--d-tile-sh': 'inset 0 1px 0 rgba(255,255,255,.1)', '--d-track': 'rgba(255,255,255,.12)', '--d-dot': '#2C2C2E',
-    '--d-blue': '#64D2FF', '--d-link': '#FF9A4D', '--d-marker': '#FFFFFF', '--d-day-sh': '0 12px 28px -16px rgba(0,0,0,.7)',
+    '--d-blue': '#64D2FF', '--d-marker': '#FFFFFF', '--d-day-sh': '0 12px 28px -16px rgba(0,0,0,.7)',
     '--d-scrim': 'rgba(0,0,0,.55)', '--d-ring': 'rgba(255,255,255,.08)', '--d-mask': 'linear-gradient(180deg, #000 0%, #000 52%, rgba(0,0,0,.5) 78%, transparent 100%)',
     '--d-hero-scrim': 'linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.28) 70%, transparent 100%)',
   },
   light: {
     '--d-surface': '#F2F2F7', '--d-fg': '#1C1C1E', '--d-fg2': 'rgba(60,60,67,.7)', '--d-tile': '#FFFFFF',
     '--d-tile-solid': '#FFFFFF', '--d-tile-sh': '0 1px 2px rgba(0,0,0,.04), 0 8px 24px -14px rgba(0,0,0,.18)', '--d-track': 'rgba(0,0,0,.08)', '--d-dot': '#FFFFFF',
-    '--d-blue': '#0062CC', '--d-link': '#C2410C', '--d-marker': '#1C1C1E', '--d-day-sh': '0 10px 24px -16px rgba(0,0,0,.4)',
+    '--d-blue': '#0062CC', '--d-marker': '#1C1C1E', '--d-day-sh': '0 10px 24px -16px rgba(0,0,0,.4)',
     '--d-scrim': 'rgba(30,30,35,.32)', '--d-ring': 'rgba(0,0,0,.06)',
     // Light surface: photo stays solid under the white text and fades out in small steps below it.
     '--d-mask': 'linear-gradient(180deg, #000 0%, #000 60%, rgba(0,0,0,.92) 66%, rgba(0,0,0,.78) 72%, rgba(0,0,0,.58) 78%, rgba(0,0,0,.38) 84%, rgba(0,0,0,.2) 90%, rgba(0,0,0,.07) 96%, transparent 100%)',
@@ -420,7 +418,7 @@ ha-card { position: relative; overflow: hidden; border: none; color: var(--wb-fg
 /* forecast day lying on the photo (light surface): light text */
 .day.lt { --wb-fg: #FFFFFF; --wb-fg2: rgba(255,255,255,.86); color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,.7), 0 1px 10px rgba(0,0,0,.65); border-right-color: rgba(255,255,255,.18); }
 .clock { flex: none; padding-left: 22px; border-left: 1px solid var(--wb-line); height: 44px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; }
-.time { font-weight: 300; font-size: 24px; line-height: 1; letter-spacing: -.02em; }
+.time { font-weight: 600; font-size: 24px; line-height: 1; letter-spacing: -.02em; }
 .date { font-size: 11.5px; color: var(--wb-fg2); margin-top: 4px; white-space: nowrap; }
 .hidden { display: none !important; }
 
@@ -756,7 +754,6 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     host.attachShadow({ mode: 'open' });
     host.shadowRoot.addEventListener('click', (e) => {
       if (e.target.closest('.close') || e.target.classList.contains('scrim')) this._closeDetail();
-      else if (e.target.closest('.more')) { this._closeDetail(); this._moreInfo(); }
     });
     this._onKey = (e) => {
       if (e.key === 'Escape') this._closeDetail();
@@ -956,7 +953,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     modal.setAttribute('aria-label', this._condText(st.state));
     modal.innerHTML = `${sheet ? '<div class="grab"><i></i></div>' : ''}${hero}
       <div class="body">${hourly}${tilesHtml}${daysHtml}
-        <div class="foot"><span>${a.attribution ? `${T.data}: ${esc(a.attribution)}` : ''}</span><button class="more">${T.more}</button></div>
+        ${a.attribution ? `<div class="foot">${T.data}: ${esc(a.attribution)}</div>` : ''}
       </div>`;
     if (prev.left && root.querySelector('.scroll')) root.querySelector('.scroll').scrollLeft = prev.left;
     if (prev.focus) root.querySelector(`.${prev.focus.split(' ')[0]}`)?.focus({ preventScroll: true });
