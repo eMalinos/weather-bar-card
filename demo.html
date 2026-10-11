@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weather bar card v3 – demo</title>
+<style>
+  body { margin: 0; background: #060606; color: #F5F5F7; font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+  body.light { background: #F2F2F7; color: #1C1C1E; }
+  .panel { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; align-items: center; }
+  .panel label { font-size: 13px; display: flex; gap: 6px; align-items: center; }
+  .wrap { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  .phone { width: 390px; }
+  h2 { font-size: 13px; font-weight: 600; opacity: .7; margin: 8px 0 0; }
+</style>
+<script>
+  // Minimal stand-ins for HA frontend elements so the card renders outside HA.
+  customElements.define('ha-card', class extends HTMLElement {
+    connectedCallback() { this.style.display = 'block'; }
+  });
+  customElements.define('ha-icon', class extends HTMLElement {
+    connectedCallback() { this.style.cssText = 'display:inline-block;width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;opacity:.6;box-sizing:border-box'; }
+  });
+</script>
+<script type="module" src="./dist/weather-bar-card.js"></script>
+</head>
+<body>
+<div class="panel">
+  <label>Condition <select id="cond"></select></label>
+  <label>Sun <select id="sun"><option>above_horizon</option><option>below_horizon</option></select></label>
+  <label>Theme <select id="theme"><option>dark</option><option>light</option></select></label>
+  <label>Tint <select id="tint"><option>neutral</option><option>photo</option></select></label>
+  <label>Shape <select id="shape"><option>edge</option><option>floating</option></select></label>
+  <label>Unit <select id="unit"><option>auto</option><option>°C</option><option>°F</option></select></label>
+  <label>Language <select id="language"><option>auto</option><option>browser</option><option>cs</option><option>en</option><option>de</option></select></label>
+  <label>Clock <select id="time_format"><option>auto</option><option>24</option><option>12</option></select></label>
+</div>
+<div class="wrap">
+  <h2>Desktop</h2>
+  <div id="desk"></div>
+  <h2>Phone (390 px)</h2>
+  <div id="phone" class="phone"></div>
+</div>
+<script type="module">
+  const conds = ['sunny', 'clear-night', 'partlycloudy', 'cloudy', 'fog', 'rainy', 'pouring', 'lightning-rainy', 'snowy', 'snowy-rainy', 'windy', 'hail', 'exceptional'];
+  const labels = { 'sunny': 'Sunny', 'clear-night': 'Clear, night', 'partlycloudy': 'Partly cloudy', 'cloudy': 'Cloudy', 'fog': 'Fog', 'rainy': 'Rainy', 'pouring': 'Pouring', 'lightning-rainy': 'Lightning, rainy', 'snowy': 'Snowy', 'snowy-rainy': 'Snowy, rainy', 'windy': 'Windy', 'hail': 'Hail', 'exceptional': 'Exceptional' };
+  const $ = (id) => document.getElementById(id);
+  $('cond').innerHTML = conds.map((c) => `<option ${c === 'rainy' ? 'selected' : ''}>${c}</option>`).join('');
+  // ?cond=sunny&sun=below_horizon&theme=light&tint=photo&shape=floating presets the controls
+  for (const [k, v] of new URLSearchParams(location.search)) if ($(k)) $(k).value = v;
+
+  const day = (offset, condition, hi, lo) => {
+    const d = new Date(); d.setDate(d.getDate() + offset); d.setHours(12, 0, 0, 0);
+    return { datetime: d.toISOString(), condition, temperature: hi, templow: lo, precipitation: offset === 0 ? 0.7 : 0 };
+  };
+  const forecast = [day(0, 'rainy', 12.7, 11.8), day(1, 'rainy', 15, 8.6), day(2, 'rainy', 15.1, 8.5), day(3, 'cloudy', 15.5, 6.9), day(4, 'sunny', 16.2, 5.5), day(5, 'partlycloudy', 19.2, 8.9)];
+  const hourly = Array.from({ length: 48 }, (_, i) => {
+    const d = new Date(); d.setMinutes(0, 0, 0); d.setHours(d.getHours() + i);
+    const h = d.getHours();
+    return { datetime: d.toISOString(), condition: h >= 13 && h <= 14 ? 'rainy' : h >= 19 || h < 7 ? 'clear-night' : 'partlycloudy',
+      temperature: Math.round((10 + 4 * Math.sin((h - 9) / 24 * 2 * Math.PI)) * 10) / 10, precipitation: h === 13 ? 0.1 : h === 14 ? 0.6 : 0 };
+  });
+  const listeners = new Set();
+  const connection = {
+    subscribeMessage(cb, msg) {
+      listeners.add(cb);
+      setTimeout(() => cb({ forecast: msg.forecast_type === 'hourly' ? hourly : forecast }), 50);
+      return Promise.resolve(() => listeners.delete(cb));
+    },
+  };
+
+  function hass() {
+    const c = $('cond').value;
+    const st = { entity_id: 'weather.forecast_domov', state: c, last_updated: new Date().toISOString(), attributes: { friendly_name: 'Domov', temperature: 12.7, temperature_unit: '°C', humidity: 75, dew_point: 8.6, wind_speed: 20.9, wind_speed_unit: 'km/h', wind_bearing: 236.7, precipitation_unit: 'mm', pressure: 1013.4, pressure_unit: 'hPa', uv_index: 0.5, cloud_coverage: 82.8, attribution: 'Weather forecast from met.no, delivered by the Norwegian Meteorological Institute.' } };
+    const rise = new Date(); rise.setHours(7, 22, 0, 0); if (rise < new Date()) rise.setDate(rise.getDate() + 1);
+    const set = new Date(); set.setHours(18, 23, 0, 0); if (set < new Date()) set.setDate(set.getDate() + 1);
+    return {
+      states: { 'weather.forecast_domov': st, 'sun.sun': { state: $('sun').value, attributes: { next_rising: rise.toISOString(), next_setting: set.toISOString() } } },
+      themes: { darkMode: $('theme').value === 'dark' },
+      locale: { language: 'en', time_format: 'language' },
+      formatEntityState: (s) => labels[s.state] ?? s.state,
+      connection,
+    };
+  }
+
+  const make = (host) => {
+    const el = document.createElement('weather-bar-card');
+    host.appendChild(el);
+    return el;
+  };
+  await customElements.whenDefined('weather-bar-card');
+  const cards = [make($('desk')), make($('phone'))];
+  function apply() {
+    document.body.classList.toggle('light', $('theme').value === 'light');
+    for (const el of cards) {
+      el.setConfig({ entity: 'weather.forecast_domov', theme: 'auto', tint: $('tint').value, shape: $('shape').value,
+        unit: $('unit').value, language: $('language').value, time_format: $('time_format').value });
+      el.hass = hass();
+    }
+  }
+  for (const id of ['tint', 'shape', 'unit', 'language', 'time_format']) $(id).onchange = apply;
+  for (const id of ['cond', 'sun', 'theme']) $(id).onchange = () => { document.body.classList.toggle('light', $('theme').value === 'light'); for (const el of cards) el.hass = hass(); };
+  apply();
+  window.__cards = cards;
+  // ?open=1 opens the detail dialog of the desktop card
+  if (new URLSearchParams(location.search).get('open')) setTimeout(() => cards[0]._openDetail(), 150);
+</script>
+</body>
+</html>
