@@ -1,4 +1,4 @@
-// Run: node --test tests/
+// Run: node --test tests/*.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { photoKey, compass, convertTemp, hour12, buildDays, particles, tempColor, level, toKmh, toHpa, isNightAt, iconFor, buildHours, photoOpacity } from '../dist/weather-bar-card.js';

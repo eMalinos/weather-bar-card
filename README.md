@@ -127,7 +127,7 @@ The forecast, dates and numbers use any language your browser supports. Conditio
 No build step: the card is a single vanilla web component in `dist/weather-bar-card.js`.
 
 ```bash
-node --test tests/              # unit tests of the pure logic
+node --test tests/*.test.mjs   # unit tests of the pure logic
 python3 -m http.server 8765     # then open http://localhost:8765/demo.html
 ```
 
