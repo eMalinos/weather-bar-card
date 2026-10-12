@@ -15,10 +15,10 @@ A full-width weather bar for the top of a Home Assistant dashboard. On the left 
 
 ## Features
 
-- **Photo of the current weather**: 12 photos (day/night variants) with a soft fade into the bar.
+- **Photo of the current weather**: 12 photos (day/night variants) across the whole bar, or on the left with a soft fade (`photo: side`).
 - **Optional effects**: animated rain, snow and lightning in the bar, the detail and each forecast day.
 - **Forecast**: animated [Meteocons](https://github.com/basmilius/weather-icons) icons, the full weekday name and day/night temperature (e.g. `15 °C / 8.6 °C`). The number of days adapts to the card width.
-- **Readable on any theme**: on a light dashboard, forecast days that lie on the photo switch to light text.
+- **Readable on any theme**: light text on a darkened photo; with `photo: side` on a light dashboard, forecast days that lie on the photo switch to light text.
 - **Compact mode**: below `compact_width` (phones) the card collapses into a small pill with temperature, condition and clock.
 - **Weather detail on click**:
   - the condition photo with the current temperature and today's high/low
@@ -77,7 +77,8 @@ In a **sections** view, put the card in its own section and set its width to *fu
 | `name` | entity name | location name in the detail header |
 | `sun_entity` | `sun.sun` | used for night photos, night icons and sunrise/sunset |
 | `theme` | `auto` | `auto` follows HA dark mode, or `dark` / `light` |
-| `tint` | `neutral` | `neutral` = grey bar, `photo` = bar tinted by the photo's colour |
+| `photo` | `full` | `full` = photo across the whole bar, `side` = photo on the left fading into the bar colour |
+| `tint` | `neutral` | with `photo: side`: `neutral` = grey bar, `photo` = bar tinted by the photo's colour |
 | `shape` | `edge` | `edge` = square corners (edge-to-edge strip), `floating` = rounded card |
 | `forecast_days` | `5` | maximum forecast days in the bar; fewer are shown when they don't fit |
 | `compact_width` | `600` | below this card width (px) the compact pill is used |
@@ -98,6 +99,7 @@ type: custom:weather-bar-card
 entity: weather.forecast_home
 name: Home
 theme: auto
+photo: full
 tint: neutral
 shape: floating
 forecast_days: 4

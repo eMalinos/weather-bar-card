@@ -1,7 +1,7 @@
 // Run: node --test tests/*.test.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { photoKey, compass, convertTemp, hour12, buildDays, particles, tempColor, level, toKmh, toHpa, isNightAt, iconFor, buildHours, photoOpacity } from '../dist/weather-bar-card.js';
+import { photoKey, compass, convertTemp, hour12, buildDays, particles, tempColor, level, toKmh, toHpa, isNightAt, iconFor, buildHours, photoOpacity, softFade } from '../dist/weather-bar-card.js';
 
 test('photoKey maps HA conditions and picks the night variant for partlycloudy', () => {
   assert.equal(photoKey('sunny', 'above_horizon'), 'sunny');
@@ -128,4 +128,11 @@ test('photoOpacity follows the soft fade and clamps', () => {
   assert.ok(Math.abs(photoOpacity(0.675) - 0.6) < 1e-9);
   assert.equal(photoOpacity(1), 0);
   assert.equal(photoOpacity(2), 0);
+});
+
+test('softFade is solid until start and eases to transparent', () => {
+  const g = softFade('180deg', 0.5, 4);
+  assert.ok(g.startsWith('linear-gradient(180deg, #000 0%, rgba(0,0,0,1.000) 50.0%'));
+  assert.ok(g.includes('rgba(0,0,0,0.500) 75.0%'));
+  assert.ok(g.endsWith('rgba(0,0,0,0.000) 100.0%)'));
 });
