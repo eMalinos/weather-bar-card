@@ -29,6 +29,7 @@
   <label>Condition <select id="cond"></select></label>
   <label>Sun <select id="sun"><option>above_horizon</option><option>below_horizon</option></select></label>
   <label>Theme <select id="theme"><option>dark</option><option>light</option></select></label>
+  <label>Photo <select id="photo"><option>full</option><option>side</option></select></label>
   <label>Tint <select id="tint"><option>neutral</option><option>photo</option></select></label>
   <label>Shape <select id="shape"><option>edge</option><option>floating</option></select></label>
   <label>Unit <select id="unit"><option>auto</option><option>°C</option><option>°F</option></select></label>
@@ -93,12 +94,12 @@
   function apply() {
     document.body.classList.toggle('light', $('theme').value === 'light');
     for (const el of cards) {
-      el.setConfig({ entity: 'weather.forecast_domov', theme: 'auto', tint: $('tint').value, shape: $('shape').value,
+      el.setConfig({ entity: 'weather.forecast_domov', theme: 'auto', photo: $('photo').value, tint: $('tint').value, shape: $('shape').value,
         unit: $('unit').value, language: $('language').value, time_format: $('time_format').value });
       el.hass = hass();
     }
   }
-  for (const id of ['tint', 'shape', 'unit', 'language', 'time_format']) $(id).onchange = apply;
+  for (const id of ['photo', 'tint', 'shape', 'unit', 'language', 'time_format']) $(id).onchange = apply;
   for (const id of ['cond', 'sun', 'theme']) $(id).onchange = () => { document.body.classList.toggle('light', $('theme').value === 'light'); for (const el of cards) el.hass = hass(); };
   apply();
   window.__cards = cards;

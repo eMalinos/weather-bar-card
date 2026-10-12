@@ -1,6 +1,6 @@
 /**
  * weather-bar-card — compact full-width weather bar for Home Assistant.
- * Photo of the current condition on the left fading into the bar colour,
+ * Photo of the current condition across the bar (or on the left, `photo: side`),
  * forecast days (icon, weekday, day / night temperature), clock on the right.
  * Click opens a detail dialog (hourly curve, current details, 5 days).
  * Below `compact_width` px it collapses to a single small row without forecast.
@@ -10,7 +10,7 @@
  * https://github.com/eMalinos/weather-bar-card
  */
 
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 
 // Folder of this module, e.g. /hacsfiles/weather-bar-card/ — photos and icons sit next to it.
 const ASSET_BASE = new URL('./', import.meta.url).href;
@@ -112,6 +112,16 @@ export const PHOTO_WIDTH = 0.52;
 
 // Bar photo fade: [position across the photo width, opacity]. Gentle steps so the edge isn't visible.
 export const PHOTO_FADE = [[0, 1], [0.45, 1], [0.6, 0.75], [0.75, 0.45], [0.88, 0.18], [1, 0]];
+
+// Eased fade from `start` (0–1) to the end, so the photo has no visible edge.
+export function softFade(dir, start, steps = 10) {
+  const stops = Array.from({ length: steps + 1 }, (_, i) => {
+    const k = i / steps;
+    const o = 1 - k * k * (3 - 2 * k); // smoothstep
+    return `rgba(0,0,0,${o.toFixed(3)}) ${((start + (1 - start) * k) * 100).toFixed(1)}%`;
+  });
+  return `linear-gradient(${dir}, #000 0%, ${stops.join(', ')})`;
+}
 
 export function photoOpacity(x) {
   if (x <= 0) return 1;
@@ -290,7 +300,8 @@ const DETAIL_STYLE = `
 @keyframes wb-sheet { from { transform: translateY(40px); opacity: 0; } }
 
 .hero { position: relative; height: var(--d-hero-h); overflow: hidden; }
-.hero .ph { position: absolute; inset: 0; background-size: cover; background-repeat: no-repeat; -webkit-mask-image: var(--d-mask); mask-image: var(--d-mask); }
+.hero .ph { position: absolute; inset: 0; background-size: cover; background-repeat: no-repeat; }
+.hero .ph, .hero .sc { -webkit-mask-image: var(--d-mask); mask-image: var(--d-mask); }
 .hero .sc { position: absolute; inset: 0; background: var(--d-hero-scrim); }
 .hero .in { position: absolute; inset: 0; padding: var(--d-pad) var(--d-pad) var(--d-hero-pb); display: flex; flex-direction: column; color: #fff; text-shadow: 0 1px 12px rgba(0,0,0,.45); }
 .top { display: flex; align-items: flex-start; gap: 12px; }
@@ -331,6 +342,12 @@ const DETAIL_STYLE = `
 .hero .tiles { flex: 0 1 470px; min-width: 0; column-gap: 18px; padding: 14px 16px; color: #fff; text-shadow: none; --d-fg2: rgba(255,255,255,.74);
   background: rgba(20,20,24,.2); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 0 0 1px rgba(255,255,255,.06); }
+.sheet .low { gap: 12px; }
+.sheet .big { flex: 1 1 0; }
+.sheet .hero .tiles { flex: 0 0 214px; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; row-gap: 10px; padding: 11px 12px; }
+.sheet .hero .tl svg { display: none; }
+.sheet .hero .tv { font-size: 16px; }
+.sheet .hero .ts { display: none; }
 .tile { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .tl { display: flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--d-fg2); white-space: nowrap; }
 .tv { display: flex; align-items: center; gap: 4px; font-size: 19px; font-weight: 600; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; }
@@ -377,7 +394,7 @@ const DETAIL_THEME = {
     '--d-tiles-bg': 'linear-gradient(165deg, rgba(62,62,66,.4), rgba(36,36,38,.5))',
     '--d-tile-sh': 'inset 0 1px 0 rgba(255,255,255,.1)', '--d-dot': '#2C2C2E',
     '--d-blue': '#64D2FF', '--d-day-sh': '0 12px 28px -16px rgba(0,0,0,.7)',
-    '--d-scrim': 'rgba(0,0,0,.55)', '--d-ring': 'rgba(255,255,255,.08)', '--d-mask': 'linear-gradient(180deg, #000 0%, #000 52%, rgba(0,0,0,.5) 78%, transparent 100%)',
+    '--d-scrim': 'rgba(0,0,0,.55)', '--d-ring': 'rgba(255,255,255,.08)', '--d-mask': softFade('180deg', 0.4),
     '--d-hero-scrim': 'linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.28) 70%, transparent 100%)',
   },
   light: {
@@ -385,9 +402,9 @@ const DETAIL_THEME = {
     '--d-tile-sh': '0 1px 2px rgba(0,0,0,.04), 0 8px 24px -14px rgba(0,0,0,.18)', '--d-dot': '#FFFFFF',
     '--d-blue': '#0062CC', '--d-day-sh': '0 10px 24px -16px rgba(0,0,0,.4)',
     '--d-scrim': 'rgba(30,30,35,.32)', '--d-ring': 'rgba(0,0,0,.06)',
-    // Light surface: photo stays solid under the white text and fades out in small steps below it.
-    '--d-mask': 'linear-gradient(180deg, #000 0%, #000 78%, rgba(0,0,0,.9) 82%, rgba(0,0,0,.72) 86%, rgba(0,0,0,.5) 90%, rgba(0,0,0,.28) 94%, rgba(0,0,0,.1) 97.5%, transparent 100%)',
-    '--d-hero-scrim': 'linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.12) 32%, rgba(0,0,0,.22) 55%, rgba(0,0,0,.2) 72%, rgba(0,0,0,.06) 86%, transparent 94%)',
+    // Light surface: photo stays solid under the white text and eases out below it.
+    '--d-mask': softFade('180deg', 0.66),
+    '--d-hero-scrim': 'linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.12) 32%, rgba(0,0,0,.22) 55%, rgba(0,0,0,.2) 72%, rgba(0,0,0,.12) 100%)',
   },
 };
 
@@ -402,7 +419,7 @@ ha-card { position: relative; overflow: hidden; border: none; color: var(--wb-fg
 .photo { position: absolute; top: 0; bottom: 0; left: 0; width: var(--wb-photo-w); background-size: cover; background-repeat: no-repeat;
   -webkit-mask-image: var(--wb-mask); mask-image: var(--wb-mask);
   opacity: 0; transition: opacity 1.1s cubic-bezier(.4,0,.2,1); }
-.photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.38), rgba(0,0,0,.18)); }
+.photo::after { content: ""; position: absolute; inset: 0; background: var(--wb-scrim); }
 .photo.on { opacity: 1; }
 ${FX_STYLE}
 
@@ -427,6 +444,9 @@ ${FX_STYLE}
 .time { font-weight: 600; font-size: 24px; line-height: 1; letter-spacing: -.02em; }
 .date { font-size: 11.5px; color: var(--wb-fg2); margin-top: 4px; white-space: nowrap; }
 .hidden { display: none !important; }
+/* photo across the whole bar: everything is light text on the photo */
+ha-card.full .days, ha-card.full .clock { text-shadow: 0 1px 2px rgba(0,0,0,.5), 0 1px 10px rgba(0,0,0,.5); }
+ha-card.full .date { color: rgba(255,255,255,.86); }
 
 /* compact: one small row, no forecast */
 ha-card.compact .row { height: 56px; padding: 0 16px; gap: 10px; }
@@ -453,6 +473,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
         {
           type: 'grid', name: '', schema: [
             { name: 'theme', selector: { select: { mode: 'dropdown', options: ['auto', 'dark', 'light'] } } },
+            { name: 'photo', selector: { select: { mode: 'dropdown', options: ['full', 'side'] } } },
             { name: 'tint', selector: { select: { mode: 'dropdown', options: ['neutral', 'photo'] } } },
             { name: 'shape', selector: { select: { mode: 'dropdown', options: ['edge', 'floating'] } } },
             { name: 'forecast_days', selector: { number: { min: 0, max: 7, mode: 'box' } } },
@@ -471,7 +492,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
         { name: 'detail', selector: { boolean: {} } },
       ],
       computeLabel: (s) => ({
-        entity: 'Weather entity', theme: 'Theme', tint: 'Bar colour', shape: 'Shape', forecast_days: 'Forecast days',
+        entity: 'Weather entity', theme: 'Theme', photo: 'Photo', tint: 'Bar colour (photo: side)', shape: 'Shape', forecast_days: 'Forecast days',
         compact_width: 'Compact below width', image_path: 'Photo folder', unit: 'Temperature unit', time_format: 'Clock', language: 'Language', show_clock: 'Show clock', effects: 'Rain / snow / lightning effects', detail: 'Open weather detail on click (off = HA more-info)',
       })[s.name],
     };
@@ -483,7 +504,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     }
     const prev = this._config;
     this._config = {
-      sun_entity: 'sun.sun', theme: 'auto', tint: 'neutral', shape: 'edge', forecast_days: 5, compact_width: 600,
+      sun_entity: 'sun.sun', theme: 'auto', photo: 'full', tint: 'neutral', shape: 'edge', forecast_days: 5, compact_width: 600,
       image_path: ASSET_BASE, images: {}, show_clock: true, effects: true,
       unit: 'auto', time_format: 'auto', language: 'auto', detail: true, ...config,
     };
@@ -647,11 +668,13 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     const compact = !!this._compact;
     const edge = cfg.shape === 'edge';
     const darkSurface = cfg.theme === 'dark' || (cfg.theme === 'auto' && this._hass.themes?.darkMode !== false);
-    // The compact pill always takes the photo tint so white text stays readable on light dashboards.
-    const tinted = cfg.tint === 'photo' || compact;
+    const full = cfg.photo !== 'side';
+    // Full photo and the compact pill take the photo tint (shown until the photo loads) so white text stays readable.
+    const tinted = cfg.tint === 'photo' || compact || full;
     const lightText = tinted || darkSurface;
 
     card.classList.toggle('compact', compact);
+    card.classList.toggle('full', full);
     const s = card.style;
     s.setProperty('--wb-bg', tinted ? TINT[key] : darkSurface ? '#232427' : '#E9E9EE');
     s.setProperty('--wb-fg', lightText ? '#FFFFFF' : '#1A1A1A');
@@ -662,9 +685,11 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     s.setProperty('--wb-pad', edge ? '28px' : '24px');
     // Wide photo with a soft fade; forecast days lying on it get light text (_fitText).
     s.setProperty('--wb-now-w', 'min(360px, 46%)');
-    s.setProperty('--wb-photo-w', compact ? '70%' : `${PHOTO_WIDTH * 100}%`);
-    s.setProperty('--wb-mask', compact ? 'linear-gradient(90deg,#000 70%,transparent 100%)'
+    s.setProperty('--wb-photo-w', full ? '100%' : compact ? '70%' : `${PHOTO_WIDTH * 100}%`);
+    s.setProperty('--wb-mask', full ? 'none' : compact ? 'linear-gradient(90deg,#000 70%,transparent 100%)'
       : `linear-gradient(90deg,${PHOTO_FADE.map(([x, o]) => `rgba(0,0,0,${o}) ${x * 100}%`).join(',')})`);
+    s.setProperty('--wb-scrim', full ? 'linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,.3) 45%, rgba(0,0,0,.4))'
+      : 'linear-gradient(90deg, rgba(0,0,0,.38), rgba(0,0,0,.18))');
     this._lightText = lightText;
     s.setProperty('--wb-shadow', edge && !compact ? 'none' : 'var(--ha-card-box-shadow, 0 14px 30px -16px rgba(0,0,0,.45))');
 
@@ -839,9 +864,9 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
 
     const vars = {
       ...DETAIL_THEME[dark ? 'dark' : 'light'],
-      '--d-pad': sheet ? '16px' : '24px', '--d-temp': sheet ? '64px' : '84px',
-      '--d-hero-h': dark ? (sheet ? '232px' : '252px') : (sheet ? '290px' : '300px'),
-      '--d-hero-pb': dark ? (sheet ? '16px' : '24px') : (sheet ? '98px' : '70px'),
+      '--d-pad': sheet ? '16px' : '24px', '--d-temp': sheet ? '50px' : '84px',
+      '--d-hero-h': dark ? (sheet ? '300px' : '260px') : (sheet ? '360px' : '330px'),
+      '--d-hero-pb': dark ? (sheet ? '20px' : '28px') : (sheet ? '112px' : '96px'),
     };
     const fx = (condition, seed, compact) => (cfg.effects ? `<div class="fx">${particles(FX_FOR[condition] ?? {}, compact, seed)}</div>` : '');
 
@@ -903,7 +928,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       <section class="tile"><div class="tl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${TILE_ICON[k]}"/></svg>${label}</div>
         <div class="tv">${value}</div><div class="ts">${sub}</div></section>`).join('')}</div>`;
 
-    // Hero: temperature left, current details beside it (desktop)
+    // Hero: temperature left, current details beside it
     const temp = convertTemp(a.temperature, fromUnit, unit);
     const heroSub = [];
     if (today) {
@@ -922,7 +947,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
           </div>
           <div class="low"><div class="big"><div class="bt">${typeof temp === 'number' ? deg(temp) : '–'}</div>
             <div class="bl">${esc(this._condText(st.state))}</div><div class="bs">${heroSub.join(' · ')}</div></div>
-            ${sheet ? '' : tilesHtml}</div>
+            ${tilesHtml}</div>
         </div>
       </div>`;
 
@@ -951,7 +976,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     const modal = root.querySelector('.modal');
     const style = Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(';');
     const html = `${sheet ? '<div class="grab"><i></i></div>' : ''}${hero}
-      <div class="body">${sheet ? tilesHtml : ''}${hourly}${daysHtml}
+      <div class="body">${hourly}${daysHtml}
         ${a.attribution ? `<div class="foot">${T.data}: ${esc(a.attribution)}</div>` : ''}
       </div>`;
     // HA pushes hass on every state change anywhere; rewriting identical content would restart the rain / snow animations.
