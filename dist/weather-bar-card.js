@@ -314,6 +314,7 @@ const DETAIL_STYLE = `
 .low { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .big { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .hero .fx { --fx-fall: var(--d-hero-h); }
+.sheet .hero .fx { --fx-fall: 300px; }
 .bt { font-size: var(--d-temp); font-weight: 200; line-height: .9; letter-spacing: -.045em; }
 .bl { font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
 .bs { font-size: 13px; color: rgba(255,255,255,.86); }
@@ -343,6 +344,9 @@ const DETAIL_STYLE = `
   background: rgba(20,20,24,.2); backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 0 0 1px rgba(255,255,255,.06); }
 .sheet .low { gap: 12px; }
+.sheet .hero { height: auto; }
+.sheet .hero .in { position: relative; }
+.sheet .low { margin-top: 16px; }
 .sheet .big { flex: 1 1 0; }
 .sheet .hero .tiles { flex: 0 0 214px; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 12px; row-gap: 10px; padding: 11px 12px; }
 .sheet .hero .tl svg { display: none; }
@@ -866,7 +870,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       ...DETAIL_THEME[dark ? 'dark' : 'light'],
       '--d-pad': sheet ? '16px' : '24px', '--d-temp': sheet ? '50px' : '84px',
       '--d-hero-h': dark ? (sheet ? '236px' : '260px') : (sheet ? '310px' : '330px'),
-      '--d-hero-pb': dark ? (sheet ? '16px' : '28px') : (sheet ? '96px' : '96px'),
+      '--d-hero-pb': dark ? (sheet ? '16px' : '28px') : (sheet ? '72px' : '96px'),
     };
     const fx = (condition, seed, compact) => (cfg.effects ? `<div class="fx">${particles(FX_FOR[condition] ?? {}, compact, seed)}</div>` : '');
 
