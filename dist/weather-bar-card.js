@@ -865,8 +865,8 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     const vars = {
       ...DETAIL_THEME[dark ? 'dark' : 'light'],
       '--d-pad': sheet ? '16px' : '24px', '--d-temp': sheet ? '50px' : '84px',
-      '--d-hero-h': dark ? (sheet ? '300px' : '260px') : (sheet ? '360px' : '330px'),
-      '--d-hero-pb': dark ? (sheet ? '20px' : '28px') : (sheet ? '112px' : '96px'),
+      '--d-hero-h': dark ? (sheet ? '236px' : '260px') : (sheet ? '310px' : '330px'),
+      '--d-hero-pb': dark ? (sheet ? '16px' : '28px') : (sheet ? '96px' : '96px'),
     };
     const fx = (condition, seed, compact) => (cfg.effects ? `<div class="fx">${particles(FX_FOR[condition] ?? {}, compact, seed)}</div>` : '');
 
