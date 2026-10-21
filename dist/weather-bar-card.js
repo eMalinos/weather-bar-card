@@ -10,7 +10,7 @@
  * https://github.com/eMalinos/weather-bar-card
  */
 
-const VERSION = '1.3.0';
+const VERSION = '1.3.1';
 
 // Folder of this module, e.g. /hacsfiles/weather-bar-card/ — photos and icons sit next to it.
 const ASSET_BASE = new URL('./', import.meta.url).href;
@@ -723,7 +723,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       this._daysKey = daysKey;
       const dayFmt = new Intl.DateTimeFormat(lang, { weekday: 'long' });
       const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
-      const deg = (v) => `${nf.format(v)} ${unit}`;
+      const deg = (v) => `${nf.format(v)} ${esc(unit)}`;
       const iconPath = cfg.icon_path ?? cfg.image_path.replace(/\/?$/, '/');
       this._el.days.innerHTML = days.map((d) => `
         <div class="day">
@@ -902,7 +902,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       const arrow = typeof a.wind_bearing === 'number'
         ? `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(${a.wind_bearing} 12 12)"><path d="M12 3v17M6.5 14.5L12 20l5.5-5.5" fill="none" stroke="#FFB340" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></g></svg>` : '';
       tiles.push(['wind', T.wind, `${nf.format(Math.round(a.wind_speed))}<small>${esc(a.wind_speed_unit ?? '')}</small>${arrow}`,
-        [dir && `${T.from} ${dir}`, T.windLv[level(kmh, [2, 12, 29, 50, 75])]].filter(Boolean).join(' · ')]);
+        [dir && `${T.from} ${esc(dir)}`, T.windLv[level(kmh, [2, 12, 29, 50, 75])]].filter(Boolean).join(' · ')]);
     }
     if (typeof a.humidity === 'number') {
       tiles.push(['humidity', T.humidity, `${nf.format(Math.round(a.humidity))}<small>%</small>`,
