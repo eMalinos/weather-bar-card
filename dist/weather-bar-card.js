@@ -10,7 +10,7 @@
  * https://github.com/eMalinos/weather-bar-card
  */
 
-const VERSION = '1.3.1';
+const VERSION = '1.4.0';
 
 // Folder of this module, e.g. /hacsfiles/weather-bar-card/ — photos and icons sit next to it.
 const ASSET_BASE = new URL('./', import.meta.url).href;
