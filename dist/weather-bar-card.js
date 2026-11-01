@@ -77,6 +77,10 @@ const I18N = {
     wind: 'Wind', humidity: 'Humidity', compass: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
     cond: { 'clear-night': 'Clear', 'cloudy': 'Cloudy', 'exceptional': 'Exceptional', 'fog': 'Fog', 'hail': 'Hail', 'lightning': 'Lightning', 'lightning-rainy': 'Lightning, rainy', 'partlycloudy': 'Partly cloudy', 'pouring': 'Pouring', 'rainy': 'Rainy', 'snowy': 'Snowy', 'snowy-rainy': 'Snowy, rainy', 'sunny': 'Sunny', 'windy': 'Windy', 'windy-variant': 'Windy' },
   },
+  he: {
+    wind: 'רוח', humidity: 'לחות', compass: ['צפון', 'צפון־מזרח', 'מזרח', 'דרום־מזרח', 'דרום', 'דרום־מערב', 'מערב', 'צפון־מערב'],
+    cond: { 'clear-night': 'בהיר', 'cloudy': 'מעונן', 'exceptional': 'מזג אוויר חריג', 'fog': 'ערפל', 'hail': 'ברד', 'lightning': 'ברקים', 'lightning-rainy': 'ברקים וגשם', 'partlycloudy': 'מעונן חלקית', 'pouring': 'גשם זלעפות', 'rainy': 'גשום', 'snowy': 'שלג', 'snowy-rainy': 'שלג וגשם', 'sunny': 'שמשי', 'windy': 'רוחות', 'windy-variant': 'רוחות חזקות' },
+  },  
 };
 
 export function photoKey(condition, sunState) {
