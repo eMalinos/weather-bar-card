@@ -22,7 +22,7 @@ A full-width weather bar for the top of a Home Assistant dashboard. On the left 
 - **Compact mode**: below `compact_width` (phones) the card collapses into a small pill with temperature, condition and clock.
 - **Weather detail on click**:
   - the condition photo with the current temperature and today's high/low
-  - a 24-hour hourly curve with icons and precipitation
+  - an hourly curve with icons and precipitation: 24 hours, or more days with `hourly_days` if the integration provides them
   - current details: wind with direction, humidity with dew point, pressure, UV index, cloud cover, sunrise/sunset
   - 5 forecast days on condition photos
   - On screens narrower than 700 px it opens as a bottom sheet. Close it with Esc, ✕ or a click outside.
@@ -81,6 +81,7 @@ In a **sections** view, put the card in its own section and set its width to *fu
 | `tint` | `neutral` | with `photo: side`: `neutral` = grey bar, `photo` = bar tinted by the photo's colour |
 | `shape` | `edge` | `edge` = square corners (edge-to-edge strip), `floating` = rounded card |
 | `forecast_days` | `5` | maximum forecast days in the bar; fewer are shown when they don't fit |
+| `hourly_days` | `1` | days of the hourly curve in the detail (1–7); shows only as many hours as the forecast provides |
 | `compact_width` | `600` | below this card width (px) the compact pill is used |
 | `show_clock` | `true` | clock and date on the right |
 | `effects` | `true` | rain / snow / lightning animation (disabled with *reduce motion*) |
@@ -103,6 +104,7 @@ photo: full
 tint: neutral
 shape: floating
 forecast_days: 4
+hourly_days: 2
 compact_width: 600
 show_clock: true
 effects: true
@@ -133,7 +135,7 @@ node --test tests/*.test.mjs   # unit tests of the pure logic
 python3 -m http.server 8765     # then open http://localhost:8765/demo.html
 ```
 
-`demo.html` renders the card with a mocked `hass`. URL parameters preset the controls, e.g. `demo.html?cond=rainy&theme=light&language=en&open=1`. `open=1` opens the detail.
+`demo.html` renders the card with a mocked `hass`. URL parameters preset the controls, e.g. `demo.html?cond=rainy&theme=light&language=en&open=1`. `open=1` opens the detail, `hourly_days=2` extends its hourly curve.
 
 Releasing: bump `VERSION` in `dist/weather-bar-card.js`, then tag `vX.Y.Z` and publish a GitHub release. HACS installs from releases.
 

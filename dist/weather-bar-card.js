@@ -10,7 +10,7 @@
  * https://github.com/eMalinos/weather-bar-card
  */
 
-const VERSION = '1.4.0';
+const VERSION = '1.5.0';
 
 // Folder of this module, e.g. /hacsfiles/weather-bar-card/ — photos and icons sit next to it.
 const ASSET_BASE = new URL('./', import.meta.url).href;
@@ -203,13 +203,13 @@ const FX_STYLE = `
 `;
 
 // ---------------------------------------------------------------------------
-// Detail dialog (click on the bar): hero photo, 24 h hourly curve, current
+// Detail dialog (click on the bar): hero photo, hourly curve (1+ days), current
 // details, 5 forecast days on condition photos. Desktop = centred modal,
 // narrow screens = bottom sheet. Design: canvas "HA Weather Bar", page v7.
 
 const DETAIL_I18N = {
   cs: {
-    updated: 'aktualizováno', hourly: 'Hodinová předpověď · 24 h', days: 'Předpověď na {n} dní', now: 'Teď',
+    updated: 'aktualizováno', hourly: 'Hodinová předpověď · {n} h', days: 'Předpověď na {n} dní', now: 'Teď',
     max: 'Max', min: 'Min', precipToday: 'srážek', noPrecip: 'bez srážek', close: 'Zavřít',
     wind: 'Vítr', from: 'od', humidity: 'Vlhkost', dew: 'rosný bod', pressure: 'Tlak', uv: 'UV index', uvMax: 'max',
     cloud: 'Oblačnost', sun: 'Slunce', sunset: 'západ', sunrise: 'východ', data: 'Data',
@@ -219,7 +219,7 @@ const DETAIL_I18N = {
     cloudLv: ['jasno', 'skoro jasno', 'polojasno', 'převážně oblačno', 'zataženo'],
   },
   en: {
-    updated: 'updated', hourly: 'Hourly forecast · 24 h', days: '{n}-day forecast', now: 'Now',
+    updated: 'updated', hourly: 'Hourly forecast · {n} h', days: '{n}-day forecast', now: 'Now',
     max: 'High', min: 'Low', precipToday: 'precipitation', noPrecip: 'no precipitation', close: 'Close',
     wind: 'Wind', from: 'from', humidity: 'Humidity', dew: 'dew point', pressure: 'Pressure', uv: 'UV index', uvMax: 'max',
     cloud: 'Cloud cover', sun: 'Sun', sunset: 'sunset', sunrise: 'sunrise', data: 'Data',
@@ -334,7 +334,7 @@ const DETAIL_STYLE = `
 .hrow svg { position: absolute; left: 8px; top: 64px; pointer-events: none; }
 .hc { width: 52px; flex: none; display: flex; flex-direction: column; align-items: center; }
 .hc .t { font-size: 12px; height: 18px; line-height: 18px; font-weight: 500; color: var(--d-fg2); white-space: nowrap; }
-.hc .t.now { font-weight: 700; color: var(--d-fg); }
+.hc .t.now, .hc .t.day { font-weight: 700; color: var(--d-fg); }
 .hc img { width: 40px; height: 40px; margin: 2px 0 4px; }
 .band { position: relative; width: 100%; height: 60px; }
 .dot { position: absolute; left: 50%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 4px; background: var(--d-dot); }
@@ -485,6 +485,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
             { name: 'tint', selector: { select: { mode: 'dropdown', options: ['neutral', 'photo'] } } },
             { name: 'shape', selector: { select: { mode: 'dropdown', options: ['edge', 'floating'] } } },
             { name: 'forecast_days', selector: { number: { min: 0, max: 7, mode: 'box' } } },
+            { name: 'hourly_days', selector: { number: { min: 1, max: 7, mode: 'box' } } },
             { name: 'compact_width', selector: { number: { min: 0, max: 2000, unit_of_measurement: 'px', mode: 'box' } } },
             { name: 'unit', selector: { select: { mode: 'dropdown', options: [
               { value: 'auto', label: 'Auto (entity)' }, { value: '°C', label: '°C' }, { value: '°F', label: '°F' }] } } },
@@ -500,7 +501,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
         { name: 'detail', selector: { boolean: {} } },
       ],
       computeLabel: (s) => ({
-        entity: 'Weather entity', theme: 'Theme', photo: 'Photo', tint: 'Bar colour (photo: side)', shape: 'Shape', forecast_days: 'Forecast days',
+        entity: 'Weather entity', theme: 'Theme', photo: 'Photo', tint: 'Bar colour (photo: side)', shape: 'Shape', forecast_days: 'Forecast days', hourly_days: 'Hourly forecast days (detail)',
         compact_width: 'Compact below width', image_path: 'Photo folder', unit: 'Temperature unit', time_format: 'Clock', language: 'Language', show_clock: 'Show clock', effects: 'Rain / snow / lightning effects', detail: 'Open weather detail on click (off = HA more-info)',
       })[s.name],
     };
@@ -512,7 +513,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     }
     const prev = this._config;
     this._config = {
-      sun_entity: 'sun.sun', theme: 'auto', photo: 'full', tint: 'neutral', shape: 'edge', forecast_days: 5, compact_width: 600,
+      sun_entity: 'sun.sun', theme: 'auto', photo: 'full', tint: 'neutral', shape: 'edge', forecast_days: 5, hourly_days: 1, compact_width: 600,
       image_path: ASSET_BASE, images: {}, show_clock: true, effects: true,
       unit: 'auto', time_format: 'auto', language: 'auto', detail: true, ...config,
     };
@@ -861,6 +862,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       ?? new Intl.DateTimeFormat(lang, { hour: 'numeric' }).resolvedOptions().hour12;
     const timeFmt = new Intl.DateTimeFormat(lang, { hour: h12 ? 'numeric' : '2-digit', minute: '2-digit', hour12: h12 });
     const hourFmt = new Intl.DateTimeFormat(lang, { hour: h12 ? 'numeric' : '2-digit', hour12: h12 });
+    const wdayFmt = new Intl.DateTimeFormat(lang, { weekday: 'short' });
     const sheet = innerWidth < 700;
     const dark = cfg.theme === 'dark' || (cfg.theme === 'auto' && this._hass.themes?.darkMode !== false);
     const sun = this._hass.states[cfg.sun_entity];
@@ -880,17 +882,21 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
 
     const { today, days } = buildDays(this._forecast, 5, now, fromUnit, unit);
     // Hourly
-    const H = buildHours(this._hourly, 24, now, fromUnit, unit);
+    // As many hours as the integration provides, up to hourly_days.
+    const H = buildHours(this._hourly, Math.max(1, Number(cfg.hourly_days) || 1) * 24, now, fromUnit, unit);
+    // Current hour = "Now", midnight = weekday, so multi-day curves show where each day starts.
+    const hourLabel = (h, i) => !i && h.date.getHours() === now.getHours() ? [T.now, ' now']
+      : i && !h.date.getHours() ? [cap(wdayFmt.format(h.date)), ' day'] : [hourFmt.format(h.date), ''];
     const hourly = !H.hours.length ? '' : `
       <section class="box hourly">
-        <div class="head"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${T.hourly}</div>
+        <div class="head"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${T.hourly.replace('{n}', H.hours.length)}</div>
         <div class="scroll"><div class="hrow">
           <svg width="${H.width}" height="60" viewBox="0 0 ${H.width} 60" aria-hidden="true">
             <defs><linearGradient id="wbc" x1="0" y1="8" x2="0" y2="46" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFB340"/><stop offset=".55" stop-color="#63E6BE"/><stop offset="1" stop-color="#5AC8FA"/></linearGradient></defs>
             <path d="${H.area}" fill="url(#wbc)" opacity=".14"/><path d="${H.curve}" fill="none" stroke="url(#wbc)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
           </svg>
           ${H.hours.map((h, i) => `
-          <div class="hc"><div class="t${i || h.date.getHours() !== now.getHours() ? '' : ' now'}">${i || h.date.getHours() !== now.getHours() ? hourFmt.format(h.date) : T.now}</div>
+          <div class="hc"><div class="t${hourLabel(h, i)[1]}">${hourLabel(h, i)[0]}</div>
             <img src="${iconPath}${iconFor(h.condition, isNightAt(h.date, sa.next_rising, sa.next_setting))}.svg" alt="">
             <div class="band"><span class="dot" style="top:${(h.y - 3.5).toFixed(1)}px;box-shadow:0 0 0 2px ${tempColor(h.temp, unit)}"></span>
               <span class="v" style="top:${(h.y < 30 ? h.y + 8 : h.y - 24).toFixed(1)}px">${deg(h.temp)}</span></div>

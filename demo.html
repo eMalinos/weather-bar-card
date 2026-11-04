@@ -95,7 +95,8 @@
     document.body.classList.toggle('light', $('theme').value === 'light');
     for (const el of cards) {
       el.setConfig({ entity: 'weather.forecast_domov', theme: 'auto', photo: $('photo').value, tint: $('tint').value, shape: $('shape').value,
-        unit: $('unit').value, language: $('language').value, time_format: $('time_format').value });
+        unit: $('unit').value, language: $('language').value, time_format: $('time_format').value,
+        hourly_days: Number(new URLSearchParams(location.search).get('hourly_days')) || 1 });
       el.hass = hass();
     }
   }

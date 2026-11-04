@@ -113,6 +113,7 @@ test('buildHours starts at the current hour and maps temps onto the curve band',
   assert.match(curve, /^M26\.0 /);
   for (const h of hours) assert.ok(h.y >= 8 && h.y <= 46);
   assert.equal(Math.min(...hours.map((h) => h.y)), 8);
+  assert.equal(buildHours(fc, 72, now).hours.length, 29); // more days requested than provided -> all remaining hours
   assert.deepEqual(buildHours(undefined).hours, []);
   assert.equal(buildHours([{ datetime: '2099-01-01T00:00:00', temperature: 50 }], 1, new Date('2098-12-31T23:30:00'), '°F', '°C').hours[0].temp, 10);
 });
