@@ -48,14 +48,14 @@ const FX_FOR = {
 // Bar colour per photo when `tint: photo`.
 const TINT = {
   'sunny': '#1E3A72', 'clear-night': '#0E1828', 'partlycloudy': '#2C4260', 'partlycloudy-night': '#16171D',
-  'cloudy': '#464A54', 'fog': '#4A3A30', 'rainy': '#2A2C2F', 'pouring': '#36404B',
+  'cloudy': '#464A54', 'fog': '#4A3A30', 'rainy': '#2C332E', 'pouring': '#36404B',
   'lightning-rainy': '#1E1A2A', 'snowy': '#2E3236', 'snowy-rainy': '#455A74', 'windy': '#384652',
 };
 
 // Focal point of each photo (CSS background-position).
 const FOCUS = {
   'sunny': '30% 38%', 'clear-night': '70% 35%', 'partlycloudy': '62% 40%', 'partlycloudy-night': '50% 45%',
-  'cloudy': '50% 55%', 'fog': '50% 55%', 'rainy': '50% 50%', 'pouring': '55% 55%',
+  'cloudy': '50% 55%', 'fog': '50% 55%', 'rainy': '50% 18%', 'pouring': '55% 55%',
   'lightning-rainy': '57% 70%', 'snowy': '50% 50%', 'snowy-rainy': '50% 55%', 'windy': '50% 45%',
 };
 
