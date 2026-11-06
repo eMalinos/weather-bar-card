@@ -49,14 +49,14 @@ const FX_FOR = {
 // Bar colour per photo when `tint: photo`.
 const TINT = {
   'sunny': '#1E3A72', 'clear-night': '#0E1828', 'partlycloudy': '#2C4260', 'partlycloudy-night': '#16171D',
-  'cloudy': '#464A54', 'fog': '#4A3A30', 'rainy': '#2F3A44', 'pouring': '#36404B',
+  'cloudy': '#464A54', 'fog': '#4A3A30', 'rainy': '#2F3A44', 'pouring': '#2E2F31',
   'lightning-rainy': '#1E1A2A', 'snowy': '#2E3236', 'snowy-rainy': '#3C3F42', 'windy': '#384652',
 };
 
 // Focal point of each photo (CSS background-position).
 const FOCUS = {
   'sunny': '30% 38%', 'clear-night': '70% 35%', 'partlycloudy': '62% 40%', 'partlycloudy-night': '50% 45%',
-  'cloudy': '50% 35%', 'fog': '50% 55%', 'rainy': '45% 30%', 'pouring': '55% 55%',
+  'cloudy': '50% 35%', 'fog': '50% 55%', 'rainy': '45% 30%', 'pouring': '55% 64%',
   'lightning-rainy': '57% 70%', 'snowy': '50% 40%', 'snowy-rainy': '50% 45%', 'windy': '50% 45%',
 };
 
@@ -64,7 +64,7 @@ const FOCUS = {
 // and fades into a blurred copy of itself; other photos cover the whole bar.
 const ZOOM = {
   'sunny': 0.45, 'clear-night': 0.45, 'partlycloudy': 0.45,
-  'partlycloudy-night': 0.25, 'cloudy': 0.17, 'lightning-rainy': 0.25,
+  'partlycloudy-night': 0.25, 'cloudy': 0.17, 'lightning-rainy': 0.25, 'pouring': 0.45,
 };
 
 // HA condition -> Meteocons fill icon (same set as clock-weather-card).
