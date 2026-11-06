@@ -76,6 +76,9 @@ test('stars scale with compact mode, bolts get one lane each', () => {
   assert.equal((particles({ stars: 40 }, true).match(/class="star"/g) ?? []).length, 20);
   const lefts = [...particles({ bolts: 3 }, false).matchAll(/class="bolt"[^>]*left:([\d.]+)%/g)].map((m) => Number(m[1]));
   assert.equal(lefts.length, 3);
+  const night = particles({ stars: 40, shooting: 1, sparkle: 2 }, false);
+  assert.equal((night.match(/class="meteor"/g) ?? []).length, 1);
+  assert.equal((night.match(/class="glint"/g) ?? []).length, 2);
   lefts.forEach((l, i) => assert.ok(l >= (i / 3) * 100 && l <= ((i + 1) / 3) * 100, `bolt ${i} at ${l}%`));
 });
 

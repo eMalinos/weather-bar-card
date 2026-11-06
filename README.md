@@ -16,7 +16,7 @@ A full-width weather bar for the top of a Home Assistant dashboard. On the left 
 ## Features
 
 - **Photo of the current weather**: 12 photos (day/night variants) across the whole bar, or on the left with a soft fade (`photo: side`). Sun, moon, lightning and downpour photos are zoomed out in the bar so the whole scene fits, fading into a blurred copy at the sides.
-- **Optional effects**: animated rain, snow, lightning bolts and twinkling stars in the bar, the detail and each forecast day.
+- **Optional effects**: animated rain, snow, lightning bolts and twinkling stars with an occasional shooting star in the bar, the detail and each forecast day.
 - **Forecast**: animated [Meteocons](https://github.com/basmilius/weather-icons) icons, the full weekday name and day/night temperature (e.g. `15 °C / 8.6 °C`). The number of days adapts to the card width.
 - **Readable on any theme**: light text on a darkened photo; with `photo: side` on a light dashboard, forecast days that lie on the photo switch to light text.
 - **Compact mode**: below `compact_width` (phones) the card collapses into a small pill with temperature, condition and clock.

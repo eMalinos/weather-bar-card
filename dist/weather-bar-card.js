@@ -40,7 +40,7 @@ const FX_FOR = {
   'pouring': { rain: 90, heavy: true },
   'lightning-rainy': { rain: 46, flash: true, bolts: 3 },
   'lightning': { flash: true, bolts: 3 },
-  'clear-night': { stars: 40 },
+  'clear-night': { stars: 40, shooting: 1, sparkle: 2 },
   'hail': { rain: 30, snow: 18 },
   'snowy': { snow: 40 },
   'snowy-rainy': { rain: 26, snow: 22 },
@@ -195,6 +195,15 @@ export function particles(fx, compact, seed = 11) {
     const z = 1 + r() * 1.6, d = 2.5 + r() * 3;
     out.push(`<i class="star" style="left:${(r() * 100).toFixed(1)}%;top:${(r() * 100).toFixed(1)}%;width:${z.toFixed(1)}px;height:${z.toFixed(1)}px;animation-duration:${d.toFixed(1)}s;animation-delay:${(-r() * d).toFixed(1)}s"></i>`);
   }
+  // A shooting star now and then, and a star that briefly flares with a cross glint; random phase per box.
+  for (let i = 0; i < (fx.shooting ?? 0); i++) {
+    const d = 11 + r() * 6;
+    out.push(`<i class="meteor" style="left:${(45 + r() * 50).toFixed(1)}%;top:${(4 + r() * 30).toFixed(1)}%;animation-duration:${d.toFixed(1)}s;animation-delay:${(-r() * d).toFixed(1)}s"></i>`);
+  }
+  for (let i = 0; i < (fx.sparkle ?? 0); i++) {
+    const d = 7 + r() * 5;
+    out.push(`<i class="glint" style="left:${(r() * 100).toFixed(1)}%;top:${(10 + r() * 70).toFixed(1)}%;animation-duration:${d.toFixed(1)}s;animation-delay:${(-r() * d).toFixed(1)}s"></i>`);
+  }
   if (fx.flash) out.push('<i class="flash"></i>');
   // Lightning bolts strike one after another within the 6 s flash cycle; the first one comes with the flash.
   const bolts = fx.bolts ? Math.max(1, Math.round(fx.bolts * scale)) : 0;
@@ -227,12 +236,23 @@ const FX_STYLE = `
   fill: none; stroke: #fff; stroke-width: 1.6; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(190,205,255,.95));
   animation: wb-flash-bolt 6s ease-in-out infinite; }
 .bolt polyline { vector-effect: non-scaling-stroke; }
+.meteor { position: absolute; width: 90px; height: 1.5px; border-radius: 1px; opacity: 0; transform-origin: 0 50%;
+  background: linear-gradient(90deg, #fff, rgba(255,255,255,.5) 25%, rgba(255,255,255,0)); box-shadow: 0 0 4px rgba(255,255,255,.6);
+  animation: wb-meteor linear infinite; }
+.glint { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; opacity: 0;
+  background: radial-gradient(circle, #fff 0 1.4px, rgba(255,255,255,.5) 2.2px, transparent 3.5px),
+    linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent) center / 100% 1px no-repeat,
+    linear-gradient(transparent, rgba(255,255,255,.9), transparent) center / 1px 100% no-repeat;
+  animation: wb-glint ease-in-out infinite; }
 @keyframes wb-rain { from { transform: translate3d(0,0,0) rotate(14deg); } to { transform: translate3d(-34px,var(--fx-fall,240px),0) rotate(14deg); } }
 @keyframes wb-snow { 0% { transform: translate3d(0,-10px,0); } 50% { transform: translate3d(10px,calc(var(--fx-fall,240px) * .375),0); } 100% { transform: translate3d(-6px,calc(var(--fx-fall,240px) * .875),0); } }
 @keyframes wb-flash { 0%,88%,100% { opacity: 0; } 89% { opacity: .38; } 90.5% { opacity: .04; } 92% { opacity: .28; } 95% { opacity: 0; } }
+@keyframes wb-meteor { 0%,92% { opacity: 0; transform: translate(0,0) rotate(-24deg); } 93% { opacity: 1; }
+  97%,100% { opacity: 0; transform: translate(-180px,80px) rotate(-24deg); } }
+@keyframes wb-glint { 0%,84%,100% { opacity: 0; transform: scale(.3) rotate(0deg); } 89% { opacity: 1; transform: scale(1) rotate(20deg); } 94% { opacity: 0; transform: scale(.5) rotate(40deg); } }
 @keyframes wb-twinkle { 0%,100% { opacity: .85; } 50% { opacity: .2; } }
 @keyframes wb-flash-bolt { 0%,88%,100% { opacity: 0; } 89% { opacity: 1; } 90.5% { opacity: .15; } 92% { opacity: .85; } 95% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .drop, .flake, .flash, .star, .bolt { animation: none; } .flash, .bolt { display: none; } }
+@media (prefers-reduced-motion: reduce) { .drop, .flake, .flash, .star, .bolt, .meteor, .glint { animation: none; } .flash, .bolt, .meteor, .glint { display: none; } }
 `;
 
 // ---------------------------------------------------------------------------
