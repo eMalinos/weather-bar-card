@@ -484,6 +484,9 @@ ha-card { position: relative; overflow: hidden; border: none; color: var(--wb-fg
   border-radius: var(--wb-radius); box-shadow: var(--wb-shadow); transition: background .9s, color .9s;
   font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
 .layer { position: absolute; inset: 0; pointer-events: none; }
+/* WebKit (Safari, the iOS app) doesn't clip animated / filtered children to a rounded overflow: hidden box,
+   so the photo and effect layers clip themselves; the card's own shadow stays outside. */
+.layer, .fx { clip-path: inset(0 round var(--wb-radius)); }
 .photo { position: absolute; top: 0; bottom: 0; left: 0; width: var(--wb-photo-w); background-size: cover; background-repeat: no-repeat;
   -webkit-mask-image: var(--wb-mask); mask-image: var(--wb-mask);
   opacity: 0; transition: opacity 1.1s cubic-bezier(.4,0,.2,1); }
