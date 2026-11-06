@@ -379,16 +379,23 @@ const DETAIL_STYLE = `
 .body { padding: 4px var(--d-pad) var(--d-pad); display: flex; flex-direction: column; gap: 14px; }
 .box { border-radius: 20px; background: var(--d-tile); box-shadow: var(--d-tile-sh); }
 .head { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--d-fg2); }
-.scroll { overflow-x: auto; scrollbar-width: none; }
+.scroll { overflow-x: auto; scrollbar-width: none; cursor: grab; }
+.scroll.drag { cursor: grabbing; }
 .scroll::-webkit-scrollbar { display: none; }
+/* day row above the hours; the name sticks to the left edge while its day is in view */
+.drow { display: flex; padding: 0 8px; width: max-content; user-select: none; }
+.ds { flex: none; overflow: clip; white-space: nowrap; height: 22px; line-height: 22px; font-size: 12px; font-weight: 700; color: var(--d-fg); }
+.ds + .ds { border-left: 1px solid var(--d-line); }
+.ds span { position: sticky; left: 0; display: inline-block; padding: 0 10px; }
 .hourly { padding: 14px 0 10px; }
 .hourly .head { padding: 0 16px 6px; }
-.hrow { position: relative; display: flex; padding: 0 8px; width: max-content; }
+.hrow { position: relative; display: flex; padding: 0 8px; width: max-content; user-select: none; }
+.hc.mid { box-shadow: inset 1px 0 0 var(--d-line); }
 .hrow svg { position: absolute; left: 8px; top: 64px; pointer-events: none; }
 .hc { width: 52px; flex: none; display: flex; flex-direction: column; align-items: center; }
 .hc .t { font-size: 12px; height: 18px; line-height: 18px; font-weight: 500; color: var(--d-fg2); white-space: nowrap; }
 .hc .t.now, .hc .t.day { font-weight: 700; color: var(--d-fg); }
-.hc img { width: 40px; height: 40px; margin: 2px 0 4px; }
+.hc img { width: 40px; height: 40px; margin: 2px 0 4px; -webkit-user-drag: none; pointer-events: none; }
 .band { position: relative; width: 100%; height: 60px; }
 .dot { position: absolute; left: 50%; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 4px; background: var(--d-dot); }
 .v { position: absolute; left: 0; right: 0; text-align: center; font-size: 13px; font-weight: 600; }
@@ -451,7 +458,7 @@ const DROP = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor
 
 const DETAIL_THEME = {
   dark: {
-    '--d-surface': '#1C1C1E', '--d-fg': '#F5F5F7', '--d-fg2': 'rgba(235,235,245,.62)', '--d-tile': 'linear-gradient(165deg, rgba(62,62,66,.55), rgba(36,36,38,.7))',
+    '--d-surface': '#1C1C1E', '--d-fg': '#F5F5F7', '--d-fg2': 'rgba(235,235,245,.62)', '--d-line': 'rgba(235,235,245,.16)', '--d-tile': 'linear-gradient(165deg, rgba(62,62,66,.55), rgba(36,36,38,.7))',
     '--d-tiles-bg': 'linear-gradient(165deg, rgba(62,62,66,.4), rgba(36,36,38,.5))',
     '--d-tile-sh': 'inset 0 1px 0 rgba(255,255,255,.1)', '--d-dot': '#2C2C2E',
     '--d-blue': '#64D2FF', '--d-day-sh': '0 12px 28px -16px rgba(0,0,0,.7)',
@@ -459,7 +466,7 @@ const DETAIL_THEME = {
     '--d-hero-scrim': 'linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,.12) 40%, rgba(0,0,0,.28) 70%, transparent 100%)',
   },
   light: {
-    '--d-surface': '#F2F2F7', '--d-fg': '#1C1C1E', '--d-fg2': 'rgba(60,60,67,.7)', '--d-tile': '#FFFFFF', '--d-tiles-bg': 'rgba(255,255,255,.72)',
+    '--d-surface': '#F2F2F7', '--d-fg': '#1C1C1E', '--d-fg2': 'rgba(60,60,67,.7)', '--d-line': 'rgba(60,60,67,.16)', '--d-tile': '#FFFFFF', '--d-tiles-bg': 'rgba(255,255,255,.72)',
     '--d-tile-sh': '0 1px 2px rgba(0,0,0,.04), 0 8px 24px -14px rgba(0,0,0,.18)', '--d-dot': '#FFFFFF',
     '--d-blue': '#0062CC', '--d-day-sh': '0 10px 24px -16px rgba(0,0,0,.4)',
     '--d-scrim': 'rgba(30,30,35,.32)', '--d-ring': 'rgba(0,0,0,.06)',
@@ -870,6 +877,21 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     host.shadowRoot.addEventListener('click', (e) => {
       if (e.target.closest('.close') || e.target.classList.contains('scrim')) this._closeDetail();
     });
+    // Mouse drag scrolls the hourly forecast; touch and trackpads scroll it natively.
+    let drag;
+    host.shadowRoot.addEventListener('pointerdown', (e) => {
+      const sc = e.pointerType === 'mouse' && e.button === 0 && e.target.closest('.scroll');
+      if (!sc) return;
+      drag = { sc, x: e.clientX, left: sc.scrollLeft };
+      sc.setPointerCapture(e.pointerId);
+      sc.classList.add('drag');
+    });
+    host.shadowRoot.addEventListener('pointermove', (e) => {
+      if (drag) drag.sc.scrollLeft = drag.left - (e.clientX - drag.x);
+    });
+    const endDrag = () => { drag?.sc.classList.remove('drag'); drag = undefined; };
+    host.shadowRoot.addEventListener('pointerup', endDrag);
+    host.shadowRoot.addEventListener('pointercancel', endDrag);
     this._onKey = (e) => {
       if (e.key === 'Escape') this._closeDetail();
       if (e.key !== 'Tab') return;
@@ -937,7 +959,6 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       ?? new Intl.DateTimeFormat(lang, { hour: 'numeric' }).resolvedOptions().hour12;
     const timeFmt = new Intl.DateTimeFormat(lang, { hour: h12 ? 'numeric' : '2-digit', minute: '2-digit', hour12: h12 });
     const hourFmt = new Intl.DateTimeFormat(lang, { hour: h12 ? 'numeric' : '2-digit', hour12: h12 });
-    const wdayFmt = new Intl.DateTimeFormat(lang, { weekday: 'short' });
     const sheet = innerWidth < 700;
     const dark = cfg.theme === 'dark' || (cfg.theme === 'auto' && this._hass.themes?.darkMode !== false);
     const sun = this._hass.states[cfg.sun_entity];
@@ -961,17 +982,25 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     const H = buildHours(this._hourly, Math.max(1, Number(cfg.hourly_days) || 1) * 24, now, fromUnit, unit);
     // Current hour = "Now", midnight = weekday, so multi-day curves show where each day starts.
     const hourLabel = (h, i) => !i && h.date.getHours() === now.getHours() ? [T.now, ' now']
-      : i && !h.date.getHours() ? [cap(wdayFmt.format(h.date)), ' day'] : [hourFmt.format(h.date), ''];
+      : i && !h.date.getHours() ? [hourFmt.format(h.date), ' day'] : [hourFmt.format(h.date), ''];
+    // Day row: one segment per calendar day, as wide as its hours.
+    const segFmt = new Intl.DateTimeFormat(lang, { weekday: 'long', day: 'numeric', month: 'numeric' });
+    const segs = [];
+    for (const h of H.hours) {
+      const last = segs[segs.length - 1];
+      if (last && last.date.toDateString() === h.date.toDateString()) last.n++;
+      else segs.push({ date: h.date, n: 1 });
+    }
     const hourly = !H.hours.length ? '' : `
       <section class="box hourly">
         <div class="head"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${T.hourly.replace('{n}', H.hours.length)}</div>
-        <div class="scroll"><div class="hrow">
+        <div class="scroll"><div class="drow">${segs.map((d) => `<div class="ds" style="width:${d.n * 52}px"><span>${esc(cap(segFmt.format(d.date)))}</span></div>`).join('')}</div><div class="hrow">
           <svg width="${H.width}" height="60" viewBox="0 0 ${H.width} 60" aria-hidden="true">
             <defs><linearGradient id="wbc" x1="0" y1="8" x2="0" y2="46" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFB340"/><stop offset=".55" stop-color="#63E6BE"/><stop offset="1" stop-color="#5AC8FA"/></linearGradient></defs>
             <path d="${H.area}" fill="url(#wbc)" opacity=".14"/><path d="${H.curve}" fill="none" stroke="url(#wbc)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
           </svg>
           ${H.hours.map((h, i) => `
-          <div class="hc"><div class="t${hourLabel(h, i)[1]}">${hourLabel(h, i)[0]}</div>
+          <div class="hc${i && !h.date.getHours() ? ' mid' : ''}"><div class="t${hourLabel(h, i)[1]}">${hourLabel(h, i)[0]}</div>
             <img src="${iconPath}${iconFor(h.condition, isNightAt(h.date, sa.next_rising, sa.next_setting))}.svg" alt="">
             <div class="band"><span class="dot" style="top:${(h.y - 3.5).toFixed(1)}px;box-shadow:0 0 0 2px ${tempColor(h.temp, unit)}"></span>
               <span class="v" style="top:${(h.y < 30 ? h.y + 8 : h.y - 24).toFixed(1)}px">${deg(h.temp)}</span></div>
