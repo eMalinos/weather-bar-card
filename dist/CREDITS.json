@@ -60,13 +60,13 @@
   ]
  },
  "rainy": {
-  "title": "Rainstorm in Kõrvemaa, Estonia (2024)",
-  "creator": "Sillerkiil",
-  "license": "cc0",
-  "src": "https://commons.wikimedia.org/wiki/File:Rainstorm_in_K%C3%B5rvemaa,_Estonia_(2024).jpg",
+  "title": "Rain in the Wrangell Mountains, with raindrops from \"Rainy November\" (Thomas Backa, CC0) composited on top",
+  "creator": "Neal Herbert, National Park Service",
+  "license": "pdm",
+  "src": "https://commons.wikimedia.org/wiki/File:Rain_in_the_Wrangell_Mountains_(39131233105).jpg",
   "size": [
    960,
-   589
+   640
   ]
  },
  "pouring": {
