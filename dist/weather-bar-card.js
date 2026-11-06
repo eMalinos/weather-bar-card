@@ -197,7 +197,7 @@ export function particles(fx, compact, seed = 11) {
   }
   if (fx.flash) out.push('<i class="flash"></i>');
   // Lightning bolts strike one after another within the 6 s flash cycle; the first one comes with the flash.
-  const bolts = fx.bolts ?? 0;
+  const bolts = fx.bolts ? Math.max(1, Math.round(fx.bolts * scale)) : 0;
   for (let i = 0; i < bolts; i++) {
     const end = 60 + r() * 40;
     let x = 20, y = 0, pts = '20,0', branch = '';
@@ -213,7 +213,7 @@ export function particles(fx, compact, seed = 11) {
   return out.join('');
 }
 
-// Rain / snow / lightning layer, shared by the bar and the detail dialog.
+// Rain / snow / lightning / stars layer, shared by the bar and the detail dialog.
 // --fx-fall = how far particles fall; set it to the height of the box they cover.
 const FX_STYLE = `
 .fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -539,7 +539,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       ],
       computeLabel: (s) => ({
         entity: 'Weather entity', theme: 'Theme', photo: 'Photo', tint: 'Bar colour (photo: side)', shape: 'Shape', forecast_days: 'Forecast days', hourly_days: 'Hourly forecast days (detail)',
-        compact_width: 'Compact below width', image_path: 'Photo folder', unit: 'Temperature unit', time_format: 'Clock', language: 'Language', show_clock: 'Show clock', effects: 'Rain / snow / lightning effects', detail: 'Open weather detail on click (off = HA more-info)',
+        compact_width: 'Compact below width', image_path: 'Photo folder', unit: 'Temperature unit', time_format: 'Clock', language: 'Language', show_clock: 'Show clock', effects: 'Rain / snow / lightning / stars effects', detail: 'Open weather detail on click (off = HA more-info)',
       })[s.name],
     };
   }
@@ -792,9 +792,10 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       layer = document.createElement('div');
       layer.className = 'photo';
       const url = cfg.images?.[key] ?? `${cfg.image_path.replace(/\/?$/, '/')}${key}.jpg`;
-      const zoom = cfg.photo !== 'side' && !cfg.images?.[key] && ZOOM[key];
+      // ZOOM is tuned for the bundled photos; own photos (images / image_path) always cover the bar
+      const zoom = cfg.photo !== 'side' && !cfg.images?.[key] && cfg.image_path === ASSET_BASE && ZOOM[key];
       if (zoom) {
-        // background-position semantics: the focus point of the photo lines up with the same point of the bar
+        // vertically background-position semantics (focus y lines up with the same point of the bar); horizontally centred
         layer.classList.add('zoom');
         layer.style.setProperty('--wb-zoom', zoom);
         layer.style.setProperty('--wb-fy', (FOCUS[key] ?? '50% 50%').split(' ')[1]);
@@ -807,12 +808,14 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
         sharp.alt = '';
         sharp.src = url;
         layer.append(amb, sharp);
-      } else layer.style.backgroundImage = `url("${url}")`;
+      } else {
+        layer.style.backgroundImage = `url("${url}")`;
+        layer.style.backgroundPosition = FOCUS[key] ?? '50% 50%';
+      }
       // light forecast text only once the photo is really there (_fitText)
       const img = new Image();
       img.onload = () => { layer.dataset.loaded = '1'; this._fitText(); };
       img.src = url;
-      layer.style.backgroundPosition = FOCUS[key] ?? '50% 50%';
       this._el.photos.appendChild(layer);
       this._photoLayers[key] = layer;
       layer.getBoundingClientRect(); // commit opacity 0 so the fade-in transition runs
