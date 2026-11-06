@@ -40,13 +40,13 @@
   ]
  },
  "cloudy": {
-  "title": "Clouds Cloudy",
-  "creator": "Free Nature Stock",
+  "title": "Cloud land and seascape Moreton Bay Qld Panorama 01",
+  "creator": "John Robert McPherson",
   "license": "cc0",
-  "src": "https://stocksnap.io/photo/clouds-cloudy-QRVA8N8C1D",
+  "src": "https://commons.wikimedia.org/wiki/File:Cloud_land_and_seascape_Moreton_Bay_Qld_Panorama_01.jpg",
   "size": [
-   960,
-   640
+   1920,
+   812
   ]
  },
  "fog": {
@@ -60,20 +60,20 @@
   ]
  },
  "rainy": {
-  "title": "Rainy November",
-  "creator": "Thomas Backa",
-  "license": "cc0",
-  "src": "https://www.flickr.com/photos/76297116@N00/10843790795",
+  "title": "Rain in the Wrangell Mountains, with raindrops from \"Rainy November\" (Thomas Backa, CC0) composited on top",
+  "creator": "Neal Herbert, National Park Service",
+  "license": "pdm",
+  "src": "https://commons.wikimedia.org/wiki/File:Rain_in_the_Wrangell_Mountains_(39131233105).jpg",
   "size": [
    960,
-   768
+   640
   ]
  },
  "pouring": {
-  "title": "Lightning storm desert",
-  "creator": null,
+  "title": "Lake under heavy rain",
+  "creator": "Jonathan Bean",
   "license": "cc0",
-  "src": "https://www.rawpixel.com/image/3298571/free-photo-image-tornado-storm-horizon-new-mexico",
+  "src": "https://commons.wikimedia.org/wiki/File:Lake_under_heavy_rain_(Unsplash).jpg",
   "size": [
    960,
    638
@@ -90,23 +90,23 @@
   ]
  },
  "snowy": {
-  "title": "Snowfall at Canyon",
-  "creator": "YellowstoneNPS",
-  "license": "pdm",
-  "src": "https://www.flickr.com/photos/80223459@N05/11455183745",
+  "title": "Snowy forest in Austria, with snowflakes on glass added",
+  "creator": "Emily Morter",
+  "license": "cc0",
+  "src": "https://commons.wikimedia.org/wiki/File:Snowy_forest_in_Austria_(Unsplash).jpg",
   "size": [
    960,
-   640
+   720
   ]
  },
  "snowy-rainy": {
-  "title": "sleet",
-  "creator": "diamondtdesign",
-  "license": "cc0",
-  "src": "https://www.flickr.com/photos/155872632@N02/38861443010",
+  "title": "Snowy road Sosonka 2017, with raindrops from \"Rainy November\" (Thomas Backa, CC0) and snowflakes added",
+  "creator": "George Chernilevsky",
+  "license": "pdm",
+  "src": "https://commons.wikimedia.org/wiki/File:Snowy_road_Sosonka_2017_BW_G1.jpg",
   "size": [
-   500,
-   500
+   960,
+   549
   ]
  },
  "windy": {

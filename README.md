@@ -15,8 +15,8 @@ A full-width weather bar for the top of a Home Assistant dashboard. On the left 
 
 ## Features
 
-- **Photo of the current weather**: 12 photos (day/night variants) across the whole bar, or on the left with a soft fade (`photo: side`).
-- **Optional effects**: animated rain, snow and lightning in the bar, the detail and each forecast day.
+- **Photo of the current weather**: 12 photos (day/night variants) across the whole bar, or on the left with a soft fade (`photo: side`). Sun, moon, lightning and downpour photos are zoomed out in the bar so the whole scene fits, fading into a blurred copy at the sides.
+- **Optional effects**: animated rain, snow, lightning bolts and twinkling stars with an occasional shooting star in the bar, the detail and each forecast day.
 - **Forecast**: animated [Meteocons](https://github.com/basmilius/weather-icons) icons, the full weekday name and day/night temperature (e.g. `15 °C / 8.6 °C`). The number of days adapts to the card width.
 - **Readable on any theme**: light text on a darkened photo; with `photo: side` on a light dashboard, forecast days that lie on the photo switch to light text.
 - **Compact mode**: below `compact_width` (phones) the card collapses into a small pill with temperature, condition and clock.
@@ -84,7 +84,7 @@ In a **sections** view, put the card in its own section and set its width to *fu
 | `hourly_days` | `1` | days of the hourly curve in the detail (1–7); shows only as many hours as the forecast provides |
 | `compact_width` | `600` | below this card width (px) the compact pill is used |
 | `show_clock` | `true` | clock and date on the right |
-| `effects` | `true` | rain / snow / lightning animation (disabled with *reduce motion*) |
+| `effects` | `true` | rain / snow / lightning / stars animation (disabled with *reduce motion*) |
 | `detail` | `true` | click opens the weather detail; `false` = HA's standard more-info dialog |
 | `unit` | `auto` | `auto` = unit of the entity, or `°C` / `°F` (converted) |
 | `language` | `auto` | `auto` = HA profile language, `browser` = browser language, or a language code (`en`, `cs`, …) |
@@ -120,7 +120,7 @@ images:
 
 Photo keys: `sunny`, `clear-night`, `partlycloudy`, `partlycloudy-night`, `cloudy`, `fog`, `rainy`, `pouring`, `lightning-rainy`, `snowy`, `snowy-rainy`, `windy`.
 
-HA's `hail`, `lightning`, `windy-variant` and `exceptional` reuse one of these. Override single photos with `images`, or point `image_path` to a folder with all of them. Landscape photos around 960 × 640 px work well.
+HA's `hail`, `lightning`, `windy-variant` and `exceptional` reuse one of these. Override single photos with `images`, or point `image_path` to a folder with all of them. Landscape photos around 960 × 640 px work well; your own photos always cover the whole bar (no zoom-out).
 
 ### Languages
 
@@ -142,7 +142,7 @@ Releasing: bump `VERSION` in `dist/weather-bar-card.js`, then tag `vX.Y.Z` and p
 ## Credits
 
 - Weather icons: [Meteocons](https://github.com/basmilius/weather-icons) by Bas Milius, MIT license (`dist/METEOCONS-LICENSE`).
-- Photos: CC0 / public domain, found via [Openverse](https://openverse.org/); sources are listed in `dist/CREDITS.json`.
+- Photos: CC0 / public domain, found via [Openverse](https://openverse.org/) and Wikimedia Commons; sources are listed in `dist/CREDITS.json`. The rainy, snowy and snowy-rainy photos have raindrops or snowflakes on glass composited on top.
 - Inspired by the [clock-weather-card](https://github.com/pkissling/clock-weather-card) icon style.
 
 ## License

@@ -38,8 +38,9 @@ const PHOTO_FOR = {
 const FX_FOR = {
   'rainy': { rain: 46 },
   'pouring': { rain: 90, heavy: true },
-  'lightning-rainy': { rain: 46, flash: true },
-  'lightning': { flash: true },
+  'lightning-rainy': { rain: 46, flash: true, bolts: 3 },
+  'lightning': { flash: true, bolts: 3 },
+  'clear-night': { stars: 40, shooting: 1, sparkle: 2 },
   'hail': { rain: 30, snow: 18 },
   'snowy': { snow: 40 },
   'snowy-rainy': { rain: 26, snow: 22 },
@@ -48,15 +49,22 @@ const FX_FOR = {
 // Bar colour per photo when `tint: photo`.
 const TINT = {
   'sunny': '#1E3A72', 'clear-night': '#0E1828', 'partlycloudy': '#2C4260', 'partlycloudy-night': '#16171D',
-  'cloudy': '#464A54', 'fog': '#4A3A30', 'rainy': '#2A2C2F', 'pouring': '#36404B',
-  'lightning-rainy': '#1E1A2A', 'snowy': '#2E3236', 'snowy-rainy': '#455A74', 'windy': '#384652',
+  'cloudy': '#464A54', 'fog': '#4A3A30', 'rainy': '#2F3A44', 'pouring': '#2E2F31',
+  'lightning-rainy': '#1E1A2A', 'snowy': '#2E3236', 'snowy-rainy': '#3C3F42', 'windy': '#384652',
 };
 
 // Focal point of each photo (CSS background-position).
 const FOCUS = {
   'sunny': '30% 38%', 'clear-night': '70% 35%', 'partlycloudy': '62% 40%', 'partlycloudy-night': '50% 45%',
-  'cloudy': '50% 55%', 'fog': '50% 55%', 'rainy': '50% 50%', 'pouring': '55% 55%',
-  'lightning-rainy': '57% 70%', 'snowy': '50% 50%', 'snowy-rainy': '50% 55%', 'windy': '50% 45%',
+  'cloudy': '50% 35%', 'fog': '50% 55%', 'rainy': '45% 30%', 'pouring': '55% 64%',
+  'lightning-rainy': '57% 70%', 'snowy': '50% 40%', 'snowy-rainy': '50% 45%', 'windy': '50% 45%',
+};
+
+// Zoomed-out bar photos: share of the photo height shown in the bar. The sharp photo sits in the middle
+// and fades into a blurred copy of itself; other photos cover the whole bar.
+const ZOOM = {
+  'sunny': 0.45, 'clear-night': 0.45, 'partlycloudy': 0.45,
+  'partlycloudy-night': 0.25, 'cloudy': 0.17, 'lightning-rainy': 0.25, 'pouring': 0.45,
 };
 
 // HA condition -> Meteocons fill icon (same set as clock-weather-card).
@@ -183,11 +191,38 @@ export function particles(fx, compact, seed = 11) {
     const z = 2.5 + r() * 3, d = 4 + r() * 4;
     out.push(`<i class="flake" style="left:${(r() * 100).toFixed(1)}%;width:${z.toFixed(1)}px;height:${z.toFixed(1)}px;animation-duration:${d.toFixed(1)}s;animation-delay:${(-r() * d).toFixed(1)}s"></i>`);
   }
+  for (let i = 0; i < Math.round((fx.stars ?? 0) * scale); i++) {
+    const z = 1 + r() * 1.6, d = 2.5 + r() * 3;
+    out.push(`<i class="star" style="left:${(r() * 100).toFixed(1)}%;top:${(r() * 100).toFixed(1)}%;width:${z.toFixed(1)}px;height:${z.toFixed(1)}px;animation-duration:${d.toFixed(1)}s;animation-delay:${(-r() * d).toFixed(1)}s"></i>`);
+  }
+  // A shooting star now and then, and a star that briefly flares with a cross glint; random phase per box.
+  for (let i = 0; i < (fx.shooting ?? 0); i++) {
+    const d = 11 + r() * 6;
+    out.push(`<i class="meteor" style="left:${(45 + r() * 50).toFixed(1)}%;top:${(4 + r() * 30).toFixed(1)}%;animation-duration:${d.toFixed(1)}s;animation-delay:${(-r() * d).toFixed(1)}s"></i>`);
+  }
+  for (let i = 0; i < (fx.sparkle ?? 0); i++) {
+    const d = 7 + r() * 5;
+    out.push(`<i class="glint" style="left:${(r() * 100).toFixed(1)}%;top:${(10 + r() * 70).toFixed(1)}%;animation-duration:${d.toFixed(1)}s;animation-delay:${(-r() * d).toFixed(1)}s"></i>`);
+  }
   if (fx.flash) out.push('<i class="flash"></i>');
+  // Lightning bolts strike one after another within the 6 s flash cycle; the first one comes with the flash.
+  const bolts = fx.bolts ? Math.max(1, Math.round(fx.bolts * scale)) : 0;
+  for (let i = 0; i < bolts; i++) {
+    const end = 60 + r() * 40;
+    let x = 20, y = 0, pts = '20,0', branch = '';
+    while (y < end) {
+      x = Math.max(4, Math.min(36, x + (r() - 0.5) * 16)); y += 8 + r() * 10;
+      pts += ` ${x.toFixed(1)},${Math.min(y, end).toFixed(1)}`;
+      if (!branch && y > 30) branch = `<polyline points="${x.toFixed(1)},${y.toFixed(1)} ${(x + 10).toFixed(1)},${(y + 18).toFixed(1)} ${(x + 7).toFixed(1)},${(y + 30).toFixed(1)}"/>`;
+    }
+    // one bolt per lane across the box, so they never pile up
+    const left = ((i + 0.25 + r() * 0.5) / bolts) * 100;
+    out.push(`<svg class="bolt" viewBox="0 0 40 100" style="left:${left.toFixed(1)}%;animation-delay:${(-i * 2.1).toFixed(1)}s"><polyline points="${pts}"/>${branch}</svg>`);
+  }
   return out.join('');
 }
 
-// Rain / snow / lightning layer, shared by the bar and the detail dialog.
+// Rain / snow / lightning / stars layer, shared by the bar and the detail dialog.
 // --fx-fall = how far particles fall; set it to the height of the box they cover.
 const FX_STYLE = `
 .fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -196,10 +231,28 @@ const FX_STYLE = `
 .drop.heavy { width: 1.6px; height: 18px; background: linear-gradient(rgba(190,215,255,0), rgba(190,215,255,.75)); }
 .flake { position: absolute; top: -12px; border-radius: 50%; background: rgba(255,255,255,.9); animation: wb-snow linear infinite; }
 .flash { position: absolute; inset: 0; background: #fff; opacity: 0; animation: wb-flash 6s ease-in-out infinite; }
+.star { position: absolute; border-radius: 50%; background: #fff; box-shadow: 0 0 3px rgba(255,255,255,.8); animation: wb-twinkle ease-in-out infinite; }
+.bolt { position: absolute; top: 0; height: 100%; aspect-ratio: 2 / 5; transform: translateX(-50%); opacity: 0; overflow: visible;
+  fill: none; stroke: #fff; stroke-width: 1.6; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(190,205,255,.95));
+  animation: wb-flash-bolt 6s ease-in-out infinite; }
+.bolt polyline { vector-effect: non-scaling-stroke; }
+.meteor { position: absolute; width: 90px; height: 1.5px; border-radius: 1px; opacity: 0; transform-origin: 0 50%;
+  background: linear-gradient(90deg, #fff, rgba(255,255,255,.5) 25%, rgba(255,255,255,0)); box-shadow: 0 0 4px rgba(255,255,255,.6);
+  animation: wb-meteor linear infinite; }
+.glint { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; opacity: 0;
+  background: radial-gradient(circle, #fff 0 1.4px, rgba(255,255,255,.5) 2.2px, transparent 3.5px),
+    linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent) center / 100% 1px no-repeat,
+    linear-gradient(transparent, rgba(255,255,255,.9), transparent) center / 1px 100% no-repeat;
+  animation: wb-glint ease-in-out infinite; }
 @keyframes wb-rain { from { transform: translate3d(0,0,0) rotate(14deg); } to { transform: translate3d(-34px,var(--fx-fall,240px),0) rotate(14deg); } }
 @keyframes wb-snow { 0% { transform: translate3d(0,-10px,0); } 50% { transform: translate3d(10px,calc(var(--fx-fall,240px) * .375),0); } 100% { transform: translate3d(-6px,calc(var(--fx-fall,240px) * .875),0); } }
 @keyframes wb-flash { 0%,88%,100% { opacity: 0; } 89% { opacity: .38; } 90.5% { opacity: .04; } 92% { opacity: .28; } 95% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .drop, .flake, .flash { animation: none; } .flash { display: none; } }
+@keyframes wb-meteor { 0%,92% { opacity: 0; transform: translate(0,0) rotate(-24deg); } 93% { opacity: 1; }
+  97%,100% { opacity: 0; transform: translate(-180px,80px) rotate(-24deg); } }
+@keyframes wb-glint { 0%,84%,100% { opacity: 0; transform: scale(.3) rotate(0deg); } 89% { opacity: 1; transform: scale(1) rotate(20deg); } 94% { opacity: 0; transform: scale(.5) rotate(40deg); } }
+@keyframes wb-twinkle { 0%,100% { opacity: .85; } 50% { opacity: .2; } }
+@keyframes wb-flash-bolt { 0%,88%,100% { opacity: 0; } 89% { opacity: 1; } 90.5% { opacity: .15; } 92% { opacity: .85; } 95% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .drop, .flake, .flash, .star, .bolt, .meteor, .glint { animation: none; } .flash, .bolt, .meteor, .glint { display: none; } }
 `;
 
 // ---------------------------------------------------------------------------
@@ -428,6 +481,10 @@ ha-card { position: relative; overflow: hidden; border: none; color: var(--wb-fg
   -webkit-mask-image: var(--wb-mask); mask-image: var(--wb-mask);
   opacity: 0; transition: opacity 1.1s cubic-bezier(.4,0,.2,1); }
 .photo::after { content: ""; position: absolute; inset: 0; background: var(--wb-scrim); }
+.photo.zoom { overflow: hidden; }
+.photo .amb { position: absolute; inset: -30px; background-size: cover; filter: blur(18px) saturate(1.1); opacity: .9; }
+.photo .sharp { position: absolute; left: 50%; top: var(--wb-fy); height: calc(100% / var(--wb-zoom)); transform: translate(-50%, calc(-1 * var(--wb-fy)));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent); }
 .photo.on { opacity: 1; }
 ${FX_STYLE}
 
@@ -502,7 +559,7 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       ],
       computeLabel: (s) => ({
         entity: 'Weather entity', theme: 'Theme', photo: 'Photo', tint: 'Bar colour (photo: side)', shape: 'Shape', forecast_days: 'Forecast days', hourly_days: 'Hourly forecast days (detail)',
-        compact_width: 'Compact below width', image_path: 'Photo folder', unit: 'Temperature unit', time_format: 'Clock', language: 'Language', show_clock: 'Show clock', effects: 'Rain / snow / lightning effects', detail: 'Open weather detail on click (off = HA more-info)',
+        compact_width: 'Compact below width', image_path: 'Photo folder', unit: 'Temperature unit', time_format: 'Clock', language: 'Language', show_clock: 'Show clock', effects: 'Rain / snow / lightning / stars effects', detail: 'Open weather detail on click (off = HA more-info)',
       })[s.name],
     };
   }
@@ -755,12 +812,30 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       layer = document.createElement('div');
       layer.className = 'photo';
       const url = cfg.images?.[key] ?? `${cfg.image_path.replace(/\/?$/, '/')}${key}.jpg`;
-      layer.style.backgroundImage = `url("${url}")`;
+      // ZOOM is tuned for the bundled photos; own photos (images / image_path) always cover the bar
+      const zoom = cfg.photo !== 'side' && !cfg.images?.[key] && cfg.image_path === ASSET_BASE && ZOOM[key];
+      if (zoom) {
+        // vertically background-position semantics (focus y lines up with the same point of the bar); horizontally centred
+        layer.classList.add('zoom');
+        layer.style.setProperty('--wb-zoom', zoom);
+        layer.style.setProperty('--wb-fy', (FOCUS[key] ?? '50% 50%').split(' ')[1]);
+        const amb = document.createElement('i');
+        amb.className = 'amb';
+        amb.style.backgroundImage = `url("${url}")`;
+        amb.style.backgroundPosition = FOCUS[key] ?? '50% 50%';
+        const sharp = document.createElement('img');
+        sharp.className = 'sharp';
+        sharp.alt = '';
+        sharp.src = url;
+        layer.append(amb, sharp);
+      } else {
+        layer.style.backgroundImage = `url("${url}")`;
+        layer.style.backgroundPosition = FOCUS[key] ?? '50% 50%';
+      }
       // light forecast text only once the photo is really there (_fitText)
       const img = new Image();
       img.onload = () => { layer.dataset.loaded = '1'; this._fitText(); };
       img.src = url;
-      layer.style.backgroundPosition = FOCUS[key] ?? '50% 50%';
       this._el.photos.appendChild(layer);
       this._photoLayers[key] = layer;
       layer.getBoundingClientRect(); // commit opacity 0 so the fade-in transition runs
