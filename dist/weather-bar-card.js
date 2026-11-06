@@ -327,12 +327,18 @@ export function buildHours(forecast, count = 24, now = new Date(), fromUnit = 'Â
   const hourStart = new Date(now); hourStart.setMinutes(0, 0, 0);
   const items = (forecast ?? []).filter((f) => f && f.datetime && typeof f.temperature === 'number' && new Date(f.datetime) >= hourStart).slice(0, count)
     .map((f) => ({ date: new Date(f.datetime), condition: f.condition, temp: convertTemp(f.temperature, fromUnit, toUnit), precipitation: f.precipitation }));
-  if (!items.length) return { hours: [], curve: '', area: '', width: 0 };
+  if (!items.length) return { hours: [], days: [], curve: '', area: '', width: 0 };
+  // Calendar days in the strip: one entry per day with its hour count; newDay marks the first hour of each later day.
+  const days = [];
+  for (const [i, h] of items.entries()) {
+    h.newDay = i > 0 && h.date.toDateString() !== items[i - 1].date.toDateString();
+    if (!i || h.newDay) days.push({ date: h.date, n: 1 }); else days[days.length - 1].n++;
+  }
   const min = Math.min(...items.map((h) => h.temp)), span = Math.max(...items.map((h) => h.temp)) - min || 1;
   for (const [i, h] of items.entries()) { h.x = i * 52 + 26; h.y = 8 + (1 - (h.temp - min) / span) * 38; }
   const curve = items.map((h, i) => `${i ? 'L' : 'M'}${h.x.toFixed(1)} ${h.y.toFixed(1)}`).join(' ');
   const last = items[items.length - 1];
-  return { hours: items, curve, area: `${curve} L${last.x} 60 L${items[0].x} 60 Z`, width: items.length * 52 };
+  return { hours: items, days, curve, area: `${curve} L${last.x} 60 L${items[0].x} 60 Z`, width: items.length * 52 };
 }
 
 const DETAIL_STYLE = `
@@ -384,9 +390,9 @@ const DETAIL_STYLE = `
 .scroll::-webkit-scrollbar { display: none; }
 /* day row above the hours; the name sticks to the left edge while its day is in view */
 .drow { display: flex; padding: 0 8px; width: max-content; user-select: none; }
-.ds { flex: none; overflow: clip; white-space: nowrap; height: 22px; line-height: 22px; font-size: 12px; font-weight: 700; color: var(--d-fg); }
+.ds { flex: none; overflow: hidden; overflow: clip; white-space: nowrap; height: 22px; line-height: 22px; font-size: 12px; font-weight: 700; color: var(--d-fg); }
 .ds + .ds { border-left: 1px solid var(--d-line); }
-.ds span { position: sticky; left: 0; display: inline-block; padding: 0 10px; }
+.ds span { position: sticky; left: 0; display: inline-block; padding: 0 8px; }
 .hourly { padding: 14px 0 10px; }
 .hourly .head { padding: 0 16px 6px; }
 .hrow { position: relative; display: flex; padding: 0 8px; width: max-content; user-select: none; }
@@ -889,12 +895,13 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
       sc.setPointerCapture(e.pointerId);
       sc.classList.add('drag');
     });
-    host.shadowRoot.addEventListener('pointermove', (e) => {
-      if (drag) drag.sc.scrollLeft = drag.left - (e.clientX - drag.x);
-    });
     const endDrag = () => { drag?.sc.classList.remove('drag'); drag = undefined; };
-    host.shadowRoot.addEventListener('pointerup', endDrag);
-    host.shadowRoot.addEventListener('pointercancel', endDrag);
+    host.shadowRoot.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      if (!(e.buttons & 1)) return endDrag(); // released outside, or capture lost
+      drag.sc.scrollLeft = drag.left - (e.clientX - drag.x);
+    });
+    for (const t of ['pointerup', 'pointercancel', 'lostpointercapture']) host.shadowRoot.addEventListener(t, endDrag);
     this._onKey = (e) => {
       if (e.key === 'Escape') this._closeDetail();
       if (e.key !== 'Tab') return;
@@ -983,31 +990,27 @@ class WeatherBarCard extends (globalThis.HTMLElement ?? class {}) {
     // Hourly
     // As many hours as the integration provides, up to hourly_days.
     const H = buildHours(this._hourly, Math.max(1, Number(cfg.hourly_days) || 1) * 24, now, fromUnit, unit);
-    // Current hour = "Now", midnight = weekday, so multi-day curves show where each day starts.
+    // Current hour = "Now"; the first hour of each later day is bold with a separator line.
     const hourLabel = (h, i) => !i && h.date.getHours() === now.getHours() ? [T.now, ' now']
-      : i && !h.date.getHours() ? [hourFmt.format(h.date), ' day'] : [hourFmt.format(h.date), ''];
-    // Day row: one segment per calendar day, as wide as its hours.
-    const segFmt = new Intl.DateTimeFormat(lang, { weekday: 'long', day: 'numeric', month: 'numeric' });
-    const segs = [];
-    for (const h of H.hours) {
-      const last = segs[segs.length - 1];
-      if (last && last.date.toDateString() === h.date.toDateString()) last.n++;
-      else segs.push({ date: h.date, n: 1 });
-    }
+      : [hourFmt.format(h.date), h.newDay ? ' day' : ''];
+    // Day row: one segment per calendar day, as wide as its hours; short label when the day has few hours left.
+    const segFmts = [{ weekday: 'short' }, { weekday: 'short', day: 'numeric', month: 'numeric' }, { weekday: 'long', day: 'numeric', month: 'numeric' }]
+      .map((o) => new Intl.DateTimeFormat(lang, o));
+    const segLabel = (d) => cap(segFmts[d.n === 1 ? 0 : d.n <= 3 ? 1 : 2].format(d.date));
     const hourly = !H.hours.length ? '' : `
       <section class="box hourly">
         <div class="head"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${T.hourly.replace('{n}', H.hours.length)}</div>
-        <div class="scroll"><div class="drow">${segs.map((d) => `<div class="ds" style="width:${d.n * 52}px"><span>${esc(cap(segFmt.format(d.date)))}</span></div>`).join('')}</div><div class="hrow">
+        <div class="scroll"><div class="drow">${H.days.map((d) => `<div class="ds" style="width:${d.n * 52}px"><span>${esc(segLabel(d))}</span></div>`).join('')}</div><div class="hrow">
           <svg width="${H.width}" height="60" viewBox="0 0 ${H.width} 60" aria-hidden="true">
             <defs><linearGradient id="wbc" x1="0" y1="8" x2="0" y2="46" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFB340"/><stop offset=".55" stop-color="#63E6BE"/><stop offset="1" stop-color="#5AC8FA"/></linearGradient></defs>
             <path d="${H.area}" fill="url(#wbc)" opacity=".14"/><path d="${H.curve}" fill="none" stroke="url(#wbc)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
           </svg>
-          ${H.hours.map((h, i) => `
-          <div class="hc${i && !h.date.getHours() ? ' mid' : ''}"><div class="t${hourLabel(h, i)[1]}">${hourLabel(h, i)[0]}</div>
+          ${H.hours.map((h, i) => { const [label, cls] = hourLabel(h, i); return `
+          <div class="hc${h.newDay ? ' mid' : ''}"><div class="t${cls}">${label}</div>
             <img src="${iconPath}${iconFor(h.condition, isNightAt(h.date, sa.next_rising, sa.next_setting))}.svg" alt="">
             <div class="band"><span class="dot" style="top:${(h.y - 3.5).toFixed(1)}px;box-shadow:0 0 0 2px ${tempColor(h.temp, unit)}"></span>
               <span class="v" style="top:${(h.y < 30 ? h.y + 8 : h.y - 24).toFixed(1)}px">${deg(h.temp)}</span></div>
-            <div class="r">${h.precipitation > 0 ? `${nf.format(h.precipitation)} ${punit}` : ''}</div></div>`).join('')}
+            <div class="r">${h.precipitation > 0 ? `${nf.format(h.precipitation)} ${punit}` : ''}</div></div>`; }).join('')}
         </div></div>
       </section>`;
 

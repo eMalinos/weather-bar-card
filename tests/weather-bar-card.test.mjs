@@ -148,3 +148,12 @@ test('softFade is solid until start and eases to transparent', () => {
   assert.ok(g.includes('rgba(0,0,0,0.500) 75.0%'));
   assert.ok(g.endsWith('rgba(0,0,0,0.000) 100.0%)'));
 });
+
+test('buildHours groups hours into calendar days and marks where each later day starts', () => {
+  const now = new Date(2026, 10, 7, 22, 10);
+  const fc = Array.from({ length: 30 }, (_, i) => ({ datetime: new Date(2026, 10, 7, 22 + i).toISOString(), temperature: 5 }));
+  const H = buildHours(fc, 30, now);
+  assert.deepEqual(H.days.map((d) => d.n), [2, 24, 4]);
+  assert.deepEqual(H.hours.flatMap((h, i) => (h.newDay ? [i] : [])), [2, 26]);
+  assert.deepEqual(buildHours([], 24, now).days, []);
+});
