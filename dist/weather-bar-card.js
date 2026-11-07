@@ -488,7 +488,10 @@ ha-card { cursor: pointer; }
 ha-card:focus-visible { outline: 2px solid #FF9A4D; outline-offset: 2px; }
 ha-card { position: relative; overflow: hidden; border: none; color: var(--wb-fg); background: var(--wb-bg);
   border-radius: var(--wb-radius); box-shadow: var(--wb-shadow); transition: background .9s, color .9s;
-  font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+  font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+  /* The theme's --ha-card-backdrop-filter (Bento glass) is drawn as a square in WebKit, ignoring
+     border-radius; the bar paints its own background, so it doesn't need the blur. */
+  backdrop-filter: none; -webkit-backdrop-filter: none; }
 .layer { position: absolute; inset: 0; pointer-events: none; }
 /* WebKit (Safari, the iOS app) doesn't clip animated / filtered children to a rounded overflow: hidden box,
    so the photo and effect layers clip themselves; the card's own shadow stays outside. */
